@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apsara Report Management - Admin Control Center</title>
+    <script>
+        (function () {
+            try {
+                localStorage.removeItem('apsara-lang');
+            } catch (error) {
+                /* storage unavailable */
+            }
+            document.documentElement.setAttribute('data-lang', 'en');
+            document.documentElement.setAttribute('lang', 'en');
+        })();
+    </script>
+    <script>
+        (function () {
+            const storageKey = 'apsara-theme';
+            try {
+                const storedTheme = localStorage.getItem(storageKey);
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (error) {
+                /* no-op */
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <a href="index.html" class="logo" data-i18n="nav.logo">📊 Apsara Report</a>
+            <div class="nav-actions">
+                <ul class="nav-links">
+                    <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+                    <li><a href="dashboard.html" data-i18n="nav.dashboard">Dashboard</a></li>
+                    <li><a href="form.html" data-i18n="nav.addEntry">Add Entry</a></li>
+                    <li><a href="list.html" data-i18n="nav.viewList">View List</a></li>
+                    <li><a href="settings.html" data-i18n="nav.settings">Settings</a></li>
+                    <li><a href="admin.html" class="active" data-i18n="nav.admin">Admin</a></li>
+                </ul>
+                <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" data-i18n-title="theme.toggle.title">🌙 Dark Mode</button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container" style="margin-top: 2rem; margin-bottom: 2rem;">
+        <div class="card" id="adminLoading">
+            <div class="loading" style="min-height: 6rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;">
+                <div class="spinner"></div>
+                <p style="color: var(--text-secondary);" data-i18n="adminConsole.loading">Verifying admin session...</p>
+            </div>
+        </div>
+
+        <div class="card alert alert-error is-hidden" id="adminError">
+            <p id="adminErrorMessage" data-i18n="adminConsole.error.sessionRequired">Session not found or expired. Please return to the homepage and sign in again.</p>
+            <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+                <button type="button" class="btn btn-secondary" id="adminRetryBtn" data-i18n="buttons.retry">🔄 Retry</button>
+                <a href="index.html" class="btn btn-primary" data-i18n="buttons.returnHome">🏠 Home</a>
+            </div>
+        </div>
+
+        <div class="card admin-panel is-hidden" id="adminShell">
+            <div class="card-header admin-panel-header">
+                <div>
+                    <h1 class="card-title" data-i18n="index.adminPanelTitle">Admin Control Center</h1>
+                    <p class="admin-subtitle" data-i18n="adminConsole.description">Create user accounts, assign roles, and toggle granular access.</p>
+                </div>
+                <div class="admin-session">
+                    <div class="admin-role-wrapper">
+                        <span class="admin-role-label" data-i18n="index.roleLabel">Role</span>
+                        <span class="badge badge-info admin-role-value" id="adminRole">Administrator</span>
+                    </div>
+                    <div class="admin-actions">
+                        <button type="button" class="btn btn-sm btn-secondary" id="backToHomeBtn" data-i18n="buttons.goToDashboard">🏠 Dashboard</button>
+                        <button type="button" class="btn btn-sm btn-secondary" id="refreshUsersBtn" data-i18n="storage.button.refresh">🔄 Refresh</button>
+                        <button type="button" class="btn btn-sm btn-primary" id="logoutBtn" data-i18n="buttons.logout">🚪 Logout</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-grid" style="margin-bottom: 2rem;">
+                <div class="admin-profile">
+                    <div class="admin-avatar" id="adminInitials">AD</div>
+                    <div>
+                        <div class="admin-name" id="adminName">Administrator</div>
+                        <div class="admin-meta" id="adminMeta" data-i18n="index.adminMeta">Signed in with elevated privileges.</div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="admin-console" aria-live="polite">
+                <form id="panelUserForm" class="panel-form">
+                    <div class="panel-form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="panelUsername" data-i18n="adminConsole.username">Username</label>
+                            <input class="form-control" id="panelUsername" name="panelUsername" type="text" placeholder="new.user" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="panelDisplayName" data-i18n="adminConsole.displayName">Display Name</label>
+                            <input class="form-control" id="panelDisplayName" name="panelDisplayName" type="text" placeholder="New User">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="panelRole" data-i18n="adminConsole.role">Role</label>
+                            <select class="form-control" id="panelRole" name="panelRole">
+                                <option value="Administrator" selected>Administrator</option>
+                                <option value="Storage Analyst">Storage Analyst</option>
+                                <option value="Viewer">Viewer</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="panelPassword" data-i18n="adminConsole.password">Password</label>
+                            <input class="form-control" id="panelPassword" name="panelPassword" type="password" placeholder="Set a password" autocomplete="new-password" data-default-placeholder="Set a password">
+                        </div>
+                    </div>
+
+                    <fieldset class="panel-permissions">
+                        <legend data-i18n="adminConsole.permissions">Permissions</legend>
+                        <div class="permission-grid">
+                            <label class="permission-checkbox">
+                                <input type="checkbox" id="permView" value="view" checked>
+                                <span data-i18n="adminConsole.permission.view">View</span>
+                            </label>
+                            <label class="permission-checkbox">
+                                <input type="checkbox" id="permAdd" value="add" checked>
+                                <span data-i18n="adminConsole.permission.add">Add Data</span>
+                            </label>
+                            <label class="permission-checkbox">
+                                <input type="checkbox" id="permEdit" value="edit" checked>
+                                <span data-i18n="adminConsole.permission.edit">Edit</span>
+                            </label>
+                            <label class="permission-checkbox">
+                                <input type="checkbox" id="permDelete" value="delete">
+                                <span data-i18n="adminConsole.permission.delete">Delete</span>
+                            </label>
+                            <label class="permission-checkbox permission-admin">
+                                <input type="checkbox" id="permAdmin" value="admin">
+                                <span data-i18n="adminConsole.permission.admin">Administrator (full)</span>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <div class="panel-actions">
+                        <button type="submit" class="btn btn-primary" id="panelSubmitBtn" data-i18n="adminConsole.addUser">Add User</button>
+                        <button type="button" class="btn btn-secondary" id="panelResetForm" data-i18n="adminConsole.reset">Reset</button>
+                    </div>
+                    <p class="panel-message" id="panelMessage" role="status" aria-live="polite"></p>
+                </form>
+
+                <section class="panel-users" aria-live="polite" style="margin-top: 2rem;">
+                    <div class="panel-users-header">
+                        <h2 data-i18n="adminConsole.userList">Team Members</h2>
+                        <span class="panel-user-count" id="panelUserCount">0</span>
+                    </div>
+                    <div class="panel-users-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th data-i18n="adminConsole.table.username">Username</th>
+                                    <th data-i18n="adminConsole.table.role">Role</th>
+                                    <th data-i18n="adminConsole.table.permissions">Permissions</th>
+                                    <th data-i18n="adminConsole.table.created">Created</th>
+                                    <th data-i18n="common.labels.actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="panelUserTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 1.75rem; color: var(--text-secondary);" data-i18n="adminConsole.table.empty">No users yet. Add your first teammate.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/i18n.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/backgroundManager.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/adminPage.js"></script>
+</body>
+</html>

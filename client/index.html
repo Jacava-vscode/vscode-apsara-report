@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apsara Report Management - Home</title>
+    <script>
+        (function () {
+            try {
+                localStorage.removeItem('apsara-lang');
+            } catch (error) {
+                /* storage unavailable */
+            }
+            document.documentElement.setAttribute('data-lang', 'en');
+            document.documentElement.setAttribute('lang', 'en');
+        })();
+    </script>
+    <script>
+        (function () {
+            const storageKey = 'apsara-theme';
+            try {
+                const storedTheme = localStorage.getItem(storageKey);
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (error) {
+                /* no-op */
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-card">
+            <form class="login-form" id="loginForm" autocomplete="off">
+                <div class="login-form-header">
+                    <h1 class="login-title" data-i18n="login.title">Secure Access</h1>
+                    <p class="login-subtitle" data-i18n="login.subtitle">Sign in to reach the admin console and storage monitor.</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="loginUsername" data-i18n="login.username">Username</label>
+                    <input class="form-control" id="loginUsername" name="username" type="text" required placeholder="admin" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="loginPassword" data-i18n="login.password">Password</label>
+                    <input class="form-control" id="loginPassword" name="password" type="password" required placeholder="••••••" autocomplete="current-password">
+                </div>
+                <p class="login-message" id="loginError" role="alert" aria-live="assertive"></p>
+                <button class="btn btn-primary btn-login" type="submit" data-i18n="login.submit">Access Console</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="appContent" class="app-shell is-hidden">
+        <!-- Header & Navigation -->
+        <header class="header">
+            <nav class="navbar">
+                <a href="index.html" class="logo" data-i18n="nav.logo">📊 Apsara Report</a>
+                <div class="nav-actions">
+                    <ul class="nav-links">
+                        <li><a href="index.html" class="active" data-i18n="nav.home">Home</a></li>
+                        <li><a href="dashboard.html" data-i18n="nav.dashboard">Dashboard</a></li>
+                        <li><a href="form.html" data-i18n="nav.addEntry">Add Entry</a></li>
+                        <li><a href="list.html" data-i18n="nav.viewList">View List</a></li>
+                        <li><a href="settings.html" data-i18n="nav.settings">Settings</a></li>
+                        <li><a href="admin.html" id="navAdminLink" class="is-hidden" data-i18n="nav.admin">Admin</a></li>
+                    </ul>
+                    <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" data-i18n-title="theme.toggle.title">🌙 Dark Mode</button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container">
+        <div class="card">
+            <h1 data-i18n="index.welcomeTitle">Welcome to Apsara Report Management System</h1>
+            <p style="margin: 1rem 0; color: var(--text-secondary);" data-i18n="index.welcomeDescription">
+                A comprehensive solution for managing computer and printer inventory with cloud storage.
+            </p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats-grid" id="quickStats">
+            <div class="stat-card">
+                <div class="stat-label" data-i18n="stats.totalEquipment">Total Equipment</div>
+                <div class="stat-value" id="totalEquipment">0</div>
+                <div class="stat-label" data-i18n="stats.itemsRegistered">Items Registered</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-label" data-i18n="stats.computers">Computers</div>
+                <div class="stat-value" id="totalComputers">0</div>
+                <div class="stat-label" data-i18n="stats.activeUnits">Active Units</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-label" data-i18n="stats.printers">Printers</div>
+                <div class="stat-value" id="totalPrinters">0</div>
+                <div class="stat-label" data-i18n="stats.activeUnits">Active Units</div>
+            </div>
+        </div>
+
+        <!-- Admin Control Panel -->
+        <div class="card admin-panel" id="adminPanel">
+            <div class="card-header admin-panel-header">
+                <div>
+                    <h2 class="card-title" data-i18n="index.adminPanelTitle">Admin Control Center</h2>
+                    <p class="admin-subtitle" data-i18n="index.adminPanelSubtitle">Manage user access and watch multi-cluster storage at a glance.</p>
+                </div>
+                <div class="admin-session">
+                    <div class="admin-role-wrapper">
+                        <span class="admin-role-label" data-i18n="index.roleLabel">Role</span>
+                        <span class="badge badge-info admin-role-value" id="adminRole">Administrator</span>
+                    </div>
+                    <div class="admin-actions">
+                        <button type="button" class="btn btn-sm btn-primary" id="openAdminPage" data-i18n="buttons.openAdmin">🔐 Admin Console</button>
+                        <button type="button" class="btn btn-sm btn-secondary" id="logoutBtn" data-i18n="buttons.logout">🚪 Logout</button>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-grid">
+                <div class="admin-profile">
+                    <div class="admin-avatar" id="adminInitials">AD</div>
+                    <div>
+                        <div class="admin-name" id="adminName">Administrator</div>
+                        <div class="admin-meta" id="adminMeta" data-i18n="index.adminMeta">Signed in with elevated privileges.</div>
+                    </div>
+                </div>
+                <div class="admin-storage">
+                    <div class="admin-storage-header">
+                        <h3 class="admin-storage-title" data-i18n="index.storageMonitorTitle">Storage Monitor</h3>
+                        <button class="btn btn-sm btn-secondary" id="refreshStorageBtn" type="button" data-i18n="storage.button.refresh">🔄 Refresh</button>
+                    </div>
+                    <div id="storageInfo">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="card">
+            <h2 class="card-title" data-i18n="index.featuresTitle">Features</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                <div style="padding: 1rem; border-left: 4px solid var(--primary-color);">
+                    <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;" data-i18n="index.feature.dashboard.title">📈 Dashboard</h3>
+                    <p style="color: var(--text-secondary);" data-i18n="index.feature.dashboard.text">View comprehensive analytics and statistics about your equipment inventory.</p>
+                    <a href="dashboard.html" class="btn btn-primary" style="margin-top: 1rem;" data-i18n="buttons.goToDashboard">Go to Dashboard</a>
+                </div>
+                <div style="padding: 1rem; border-left: 4px solid var(--success-color);">
+                    <h3 style="color: var(--success-color); margin-bottom: 0.5rem;" data-i18n="index.feature.add.title">➕ Add Entry</h3>
+                    <p style="color: var(--text-secondary);" data-i18n="index.feature.add.text">Register new computers and printers with detailed information.</p>
+                    <a href="form.html" class="btn btn-success" style="margin-top: 1rem;" data-i18n="buttons.addEquipment">Add Equipment</a>
+                </div>
+                <div style="padding: 1rem; border-left: 4px solid var(--warning-color);">
+                    <h3 style="color: var(--warning-color); margin-bottom: 0.5rem;" data-i18n="index.feature.list.title">📋 View List</h3>
+                    <p style="color: var(--text-secondary);" data-i18n="index.feature.list.text">Browse, search, and manage all registered equipment.</p>
+                    <a href="list.html" class="btn btn-secondary" style="margin-top: 1rem;" data-i18n="buttons.viewAll">View All</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Additions -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title" data-i18n="index.recentAdditions">Recent Additions</h2>
+                <a href="list.html" class="btn btn-primary btn-sm" data-i18n="buttons.viewAll">View All</a>
+            </div>
+            <div id="recentItems">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+        </main>
+    </div>
+    <script src="js/i18n.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/backgroundManager.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/storageMonitor.js"></script>
+    <script src="js/home.js"></script>
+</body>
+</html>

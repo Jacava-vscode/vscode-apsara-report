@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipment List - Apsara Report</title>
+    <script>
+        (function () {
+            try {
+                localStorage.removeItem('apsara-lang');
+            } catch (error) {
+                /* storage unavailable */
+            }
+            document.documentElement.setAttribute('data-lang', 'en');
+            document.documentElement.setAttribute('lang', 'en');
+        })();
+    </script>
+    <script>
+        (function () {
+            const storageKey = 'apsara-theme';
+            try {
+                const storedTheme = localStorage.getItem(storageKey);
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (error) {
+                /* no-op */
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="list-page">
+    <!-- Header & Navigation -->
+    <header class="header">
+        <nav class="navbar">
+            <a href="index.html" class="logo" data-i18n="nav.logo">📊 Apsara Report</a>
+            <div class="nav-actions">
+                <ul class="nav-links">
+                    <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+                    <li><a href="dashboard.html" data-i18n="nav.dashboard">Dashboard</a></li>
+                    <li><a href="form.html" data-i18n="nav.addEntry">Add Entry</a></li>
+                    <li><a href="list.html" class="active" data-i18n="nav.viewList">View List</a></li>
+                    <li><a href="settings.html" data-i18n="nav.settings">Settings</a></li>
+                    <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
+                </ul>
+                <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" data-i18n-title="theme.toggle.title">🌙 Dark Mode</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container list-container">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title" data-i18n="list.title">Equipment List</h1>
+                <a href="form.html" class="btn btn-primary" data-i18n="list.button.addNew">+ Add New</a>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <!-- Search & Filter -->
+            <div class="search-box">
+                <input type="text" class="form-control" id="searchInput" placeholder="🔍 Search by brand, model, serial number..." data-i18n-placeholder="list.placeholder.search">
+                <input type="tel" class="form-control" id="phoneFilter" placeholder="📞 Filter by phone..." data-i18n-placeholder="list.filters.phonePlaceholder">
+                <input type="date" class="form-control" id="startDateFilter" title="Filter from date" aria-label="Filter from date" data-i18n-title="list.filters.dateFrom" data-i18n-aria-label="list.filters.dateFrom">
+                <input type="date" class="form-control" id="endDateFilter" title="Filter to date" aria-label="Filter to date" data-i18n-title="list.filters.dateTo" data-i18n-aria-label="list.filters.dateTo">
+                <select class="form-control" id="typeFilter">
+                    <option value="" data-i18n="list.filters.allTypes">All Types</option>
+                    <option value="desktop" data-i18n="list.filters.type.desktop">Desktop</option>
+                    <option value="laptop" data-i18n="list.filters.type.laptop">Laptop</option>
+                    <option value="printer" data-i18n="list.filters.type.printer">Printer</option>
+                    <option value="computer" data-i18n="list.filters.type.computerLegacy">Computer (Legacy)</option>
+                </select>
+                <select class="form-control" id="statusFilter">
+                    <option value="" data-i18n="list.filters.allStatus">All Status</option>
+                    <option value="working" data-i18n="list.filters.status.working">Working</option>
+                    <option value="maintenance" data-i18n="list.filters.status.maintenance">Under Maintenance</option>
+                    <option value="broken" data-i18n="list.filters.status.broken">Broken</option>
+                    <option value="done" data-i18n="list.filters.status.done">Done</option>
+                </select>
+                <button type="button" class="btn btn-secondary" id="exportButton" data-i18n="list.export.download">⬇️ Download Excel</button>
+            </div>
+
+            <!-- Equipment Table -->
+            <div class="table-container" id="tableContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Modal (Simple overlay) -->
+    <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="max-width: 600px; margin: 2rem auto; background: var(--surface); color: var(--text-primary); border-radius: 8px; padding: 2rem; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 data-i18n="list.modal.title">Edit Equipment</h2>
+                <button onclick="closeEditModal()" class="btn btn-secondary btn-sm" data-i18n="list.modal.close">Close</button>
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                
+                <div class="form-group">
+                    <label class="form-label" for="editType" data-i18n="common.labels.type">Type</label>
+                    <select class="form-control" id="editType" required>
+                        <option value="desktop" data-i18n="types.desktop">Desktop</option>
+                        <option value="laptop" data-i18n="types.laptop">Laptop</option>
+                        <option value="printer" data-i18n="types.printer">Printer</option>
+                        <option value="computer" data-i18n="types.computerLegacy">Computer (Legacy)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editBrand" data-i18n="common.labels.brand">Brand</label>
+                    <input type="text" class="form-control" id="editBrand" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editModel" data-i18n="common.labels.model">Model</label>
+                    <input type="text" class="form-control" id="editModel" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editSerialNumber" data-i18n="common.labels.serialNumber">Serial Number</label>
+                    <input type="text" class="form-control" id="editSerialNumber">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editStatus" data-i18n="common.labels.status">Status</label>
+                    <select class="form-control" id="editStatus" required>
+                        <option value="working" data-i18n="form.options.status.working">Working</option>
+                        <option value="maintenance" data-i18n="form.options.status.maintenance">Under Maintenance</option>
+                        <option value="broken" data-i18n="form.options.status.broken">Broken</option>
+                        <option value="done" data-i18n="form.options.status.done">Done</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editImages" data-i18n="form.fields.image">Image Attachments</label>
+                    <input type="file" class="form-control" id="editImages" accept="image/*" multiple>
+                    <p class="form-helper" style="margin-top: 0.5rem; color: var(--text-secondary);" data-i18n="form.helpers.image">Upload up to 5 JPG or PNG files. Each must be under 2MB.</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editLocation" data-i18n="common.labels.location">Location</label>
+                    <input type="text" class="form-control" id="editLocation">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editCheckInDate" data-i18n="form.fields.checkInDate">Date Check-in</label>
+                    <input type="date" class="form-control" id="editCheckInDate">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editAssignedTo" data-i18n="common.labels.assignedTo">Assigned To</label>
+                    <input type="text" class="form-control" id="editAssignedTo">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editCustomerId" data-i18n="common.labels.customerId">Customer ID</label>
+                    <input type="text" class="form-control" id="editCustomerId">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editCustomerPhone" data-i18n="common.labels.customerPhone">Customer Phone</label>
+                    <input type="tel" class="form-control" id="editCustomerPhone">
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary" data-i18n="list.modal.saveChanges">Save Changes</button>
+                    <button type="button" onclick="closeEditModal()" class="btn btn-secondary" data-i18n="list.modal.cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Image Modal -->
+    <div id="viewModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="max-width: 600px; margin: 2rem auto; background: var(--surface); color: var(--text-primary); border-radius: 8px; padding: 2rem; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 data-i18n="list.viewModal.title">Equipment Image</h2>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" onclick="handlePrintButtonClick()" class="btn btn-primary btn-sm" data-i18n="list.viewModal.print">Print</button>
+                        <button type="button" onclick="closeViewModal()" class="btn btn-secondary btn-sm" data-i18n="list.modal.close">Close</button>
+                    </div>
+            </div>
+            <div id="viewModalBody" style="text-align: left; display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="print-options-bar">
+                    <label class="print-options-label" for="printPaperSize" data-i18n="list.viewModal.previewPaperSizeLabel">Paper size</label>
+                    <select id="printPaperSize" class="print-options-select">
+                        <option value="auto" data-i18n="list.viewModal.previewPaperSize.auto">Browser default</option>
+                        <option value="a4" data-i18n="list.viewModal.previewPaperSize.a4">A4</option>
+                        <option value="letter" data-i18n="list.viewModal.previewPaperSize.letter">Letter</option>
+                    </select>
+                </div>
+                <div id="viewDetails" style="display: grid; gap: 1.5rem;">
+                    <div class="detail-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                        <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span class="detail-label" data-i18n="common.labels.type" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Type</span>
+                            <span class="detail-value" id="viewType" style="font-weight: 600;">N/A</span>
+                        </div>
+                        <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span class="detail-label" data-i18n="common.labels.status" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Status</span>
+                            <span class="detail-value" id="viewStatus" style="font-weight: 600;">N/A</span>
+                        </div>
+                        <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span class="detail-label" data-i18n="common.labels.brand" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Brand</span>
+                            <span class="detail-value" id="viewBrand" style="font-weight: 600;">N/A</span>
+                        </div>
+                        <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span class="detail-label" data-i18n="common.labels.model" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Model</span>
+                            <span class="detail-value" id="viewModel" style="font-weight: 600;">N/A</span>
+                        </div>
+                        <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span class="detail-label" data-i18n="common.labels.serialNumber" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Serial Number</span>
+                            <span class="detail-value" id="viewSerialNumber" style="font-weight: 600;">N/A</span>
+                        </div>
+                        <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span class="detail-label" data-i18n="common.labels.location" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Location</span>
+                            <span class="detail-value" id="viewLocation" style="font-weight: 600;">N/A</span>
+                        </div>
+                        <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span class="detail-label" data-i18n="common.labels.assignedTo" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Assigned To</span>
+                            <span class="detail-value" id="viewAssignedTo" style="font-weight: 600;">N/A</span>
+                        </div>
+                        <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span class="detail-label" data-i18n="common.labels.customerId" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Customer ID</span>
+                            <span class="detail-value" id="viewCustomerId" style="font-weight: 600;">N/A</span>
+                        </div>
+                        <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span class="detail-label" data-i18n="common.labels.customerPhone" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Customer Phone</span>
+                            <span class="detail-value" id="viewCustomerPhone" style="font-weight: 600;">N/A</span>
+                        </div>
+                        <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span class="detail-label" data-i18n="form.fields.purchaseDate" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Purchase Date</span>
+                            <span class="detail-value" id="viewPurchaseDate" style="font-weight: 600;">N/A</span>
+                        </div>
+                        <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span class="detail-label" data-i18n="form.fields.checkInDate" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Date Check-in</span>
+                            <span class="detail-value" id="viewCheckInDate" style="font-weight: 600;">N/A</span>
+                        </div>
+                        <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span class="detail-label" data-i18n="form.fields.warrantyExpiry" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Warranty Expiry</span>
+                            <span class="detail-value" id="viewWarrantyExpiry" style="font-weight: 600;">N/A</span>
+                        </div>
+                    </div>
+                    <div class="detail-notes" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <span class="detail-label" data-i18n="form.fields.notes" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Notes</span>
+                        <p class="detail-value" id="viewNotes" style="margin: 0; white-space: pre-wrap;">N/A</p>
+                    </div>
+                    <div id="viewComputerSpecsSection" style="display: none;">
+                        <h3 class="detail-heading" data-i18n="form.computerSpecsTitle" style="margin: 0 0 0.75rem;">Computer specifications</h3>
+                        <div class="detail-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                            <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                <span class="detail-label" data-i18n="form.fields.processor" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Processor</span>
+                                <span class="detail-value" id="viewProcessor" style="font-weight: 600;">N/A</span>
+                            </div>
+                            <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                <span class="detail-label" data-i18n="form.fields.ram" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">RAM</span>
+                                <span class="detail-value" id="viewRam" style="font-weight: 600;">N/A</span>
+                            </div>
+                            <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                <span class="detail-label" data-i18n="form.fields.storage" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Storage</span>
+                                <span class="detail-value" id="viewStorage" style="font-weight: 600;">N/A</span>
+                            </div>
+                            <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                <span class="detail-label" data-i18n="form.fields.os" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Operating System</span>
+                                <span class="detail-value" id="viewOs" style="font-weight: 600;">N/A</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="viewPrinterSpecsSection" style="display: none;">
+                        <h3 class="detail-heading" data-i18n="form.printerSpecsTitle" style="margin: 0 0 0.75rem;">Printer specifications</h3>
+                        <div class="detail-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                            <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                <span class="detail-label" data-i18n="form.fields.printerType" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Printer Type</span>
+                                <span class="detail-value" id="viewPrinterType" style="font-weight: 600;">N/A</span>
+                            </div>
+                            <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                <span class="detail-label" data-i18n="form.fields.printTechnology" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Print Technology</span>
+                                <span class="detail-value" id="viewPrintTechnology" style="font-weight: 600;">N/A</span>
+                            </div>
+                            <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                <span class="detail-label" data-i18n="form.fields.connectivity" style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Connectivity</span>
+                                <span class="detail-value" id="viewConnectivity" style="font-weight: 600;">N/A</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="border-top: 1px solid var(--border-color);"></div>
+                <div style="text-align: center; display: flex; flex-direction: column; gap: 1rem;">
+                    <p id="viewImageMessage" data-i18n="list.viewModal.noImage" style="color: var(--text-secondary); margin: 0;">No images attached for this item.</p>
+                    <div id="viewImageGallery" class="image-gallery" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/i18n.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/backgroundManager.js"></script>
+    <script src="js/printSettingsManager.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/list.js"></script>
+</body>
+</html>

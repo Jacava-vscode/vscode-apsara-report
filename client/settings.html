@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apsara Report Management - Settings</title>
+    <script>
+        (function () {
+            try {
+                localStorage.removeItem('apsara-lang');
+            } catch (error) {
+                /* storage unavailable */
+            }
+            document.documentElement.setAttribute('data-lang', 'en');
+            document.documentElement.setAttribute('lang', 'en');
+        })();
+    </script>
+    <script>
+        (function () {
+            const storageKey = 'apsara-theme';
+            try {
+                const storedTheme = localStorage.getItem(storageKey);
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (error) {
+                /* no-op */
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <a href="index.html" class="logo" data-i18n="nav.logo">📊 Apsara Report</a>
+            <div class="nav-actions">
+                <ul class="nav-links">
+                    <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+                    <li><a href="dashboard.html" data-i18n="nav.dashboard">Dashboard</a></li>
+                    <li><a href="form.html" data-i18n="nav.addEntry">Add Entry</a></li>
+                    <li><a href="list.html" data-i18n="nav.viewList">View List</a></li>
+                    <li><a href="settings.html" class="active" data-i18n="nav.settings">Settings</a></li>
+                    <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
+                </ul>
+                <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" data-i18n-title="theme.toggle.title">🌙 Dark Mode</button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container" style="margin-top: 2rem; margin-bottom: 3rem;">
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h1 class="card-title" data-i18n="settings.title">Background &amp; Display</h1>
+                <p class="card-subtitle" data-i18n="settings.subtitle">Personalize the animated backdrop used across the experience.</p>
+            </div>
+            <div style="padding: 1.75rem;">
+                <p style="color: var(--text-secondary);" data-i18n="settings.description">Select a theme to update the login overlay and application surfaces.</p>
+                <section aria-labelledby="settingsTipsHeading" style="margin-top: 1.5rem;">
+                    <h2 id="settingsTipsHeading" class="section-heading" style="font-size: 1.05rem; margin-bottom: 0.75rem;" data-i18n="settings.checklist.heading">Quick tips</h2>
+                    <ul style="margin: 0 0 0 1.2rem; padding: 0; list-style: disc; color: var(--text-secondary); display: grid; gap: 0.5rem;">
+                        <li data-i18n="settings.checklist.items.instant">Click a tile to preview instantly.</li>
+                        <li data-i18n="settings.checklist.items.save">Use Save selection to remember your choice for next visits.</li>
+                        <li data-i18n="settings.checklist.items.reset">Need to revert? Reset to default brings back the classic gradient.</li>
+                    </ul>
+                </section>
+            </div>
+        </div>
+
+        <div class="card" aria-live="polite">
+            <div style="display: flex; flex-direction: column; gap: 1.75rem; padding: 1.75rem;">
+                <div class="background-preview bg-theme-default" data-background-preview>
+                    <div class="preview-info">
+                        <span class="preview-chip" data-i18n="settings.preview.badge">Live preview</span>
+                        <div class="preview-headline" data-i18n="settings.preview.title">Login overlay preview</div>
+                        <div class="preview-subtle" data-i18n="settings.preview.subtitle">Changes apply to the landing overlay and global background.</div>
+                        <div class="preview-subtle" data-preview-chip>Selected theme: Classic Gradient</div>
+                    </div>
+                </div>
+
+                <p style="margin: -0.5rem 0 0; color: var(--text-secondary);" data-i18n="settings.helper.autoApply">Selecting a theme updates the preview immediately. Save to keep it for later.</p>
+
+                <div class="background-option-grid" data-background-options></div>
+
+                <div class="settings-actions">
+                    <button type="button" class="btn btn-primary" id="saveBackgroundBtn" data-i18n="settings.buttons.save">Save selection</button>
+                    <button type="button" class="btn btn-secondary" id="resetBackgroundBtn" data-i18n="settings.buttons.reset">Reset to default</button>
+                </div>
+
+                <div class="alert alert-success is-hidden" id="settingsAlert" role="status" aria-live="assertive"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/i18n.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/backgroundManager.js"></script>
+    <script src="js/settings.js"></script>
+</body>
+</html>

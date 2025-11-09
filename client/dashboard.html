@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Apsara Report</title>
+    <script>
+        (function () {
+            try {
+                localStorage.removeItem('apsara-lang');
+            } catch (error) {
+                /* storage unavailable */
+            }
+            document.documentElement.setAttribute('data-lang', 'en');
+            document.documentElement.setAttribute('lang', 'en');
+        })();
+    </script>
+    <script>
+        (function () {
+            const storageKey = 'apsara-theme';
+            try {
+                const storedTheme = localStorage.getItem(storageKey);
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (error) {
+                /* no-op */
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Header & Navigation -->
+    <header class="header">
+        <nav class="navbar">
+            <a href="index.html" class="logo" data-i18n="nav.logo">📊 Apsara Report</a>
+            <div class="nav-actions">
+                <ul class="nav-links">
+                    <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+                    <li><a href="dashboard.html" class="active" data-i18n="nav.dashboard">Dashboard</a></li>
+                    <li><a href="form.html" data-i18n="nav.addEntry">Add Entry</a></li>
+                    <li><a href="list.html" data-i18n="nav.viewList">View List</a></li>
+                    <li><a href="settings.html" data-i18n="nav.settings">Settings</a></li>
+                    <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
+                </ul>
+                <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" data-i18n-title="theme.toggle.title">🌙 Dark Mode</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <div class="card">
+            <h1 class="card-title" data-i18n="dashboard.title">Dashboard Overview</h1>
+            <p style="color: var(--text-secondary);" data-i18n="dashboard.subtitle">Real-time statistics and analytics of your equipment inventory</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-label" data-i18n="stats.totalEquipment">Total Equipment</div>
+                <div class="stat-value" id="totalEquipment">0</div>
+                <div class="stat-label" data-i18n="stats.itemsRegistered">Items Registered</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-label" data-i18n="status.working">Working</div>
+                <div class="stat-value" id="workingCount">0</div>
+                <div class="stat-label" data-i18n="stats.operationalUnits">Operational Units</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-label" data-i18n="status.maintenance">Maintenance</div>
+                <div class="stat-value" id="maintenanceCount">0</div>
+                <div class="stat-label" data-i18n="stats.underRepair">Under Repair</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-label" data-i18n="status.broken">Broken</div>
+                <div class="stat-value" id="brokenCount">0</div>
+                <div class="stat-label" data-i18n="stats.nonFunctional">Non-Functional</div>
+            </div>
+        </div>
+
+        <!-- Storage Monitoring -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h2 class="card-title" data-i18n="dashboard.storageTitle">💾 Multi-Cluster Storage</h2>
+                <button class="btn btn-sm btn-secondary" id="refreshStorageBtn" type="button" data-i18n="storage.button.refresh">🔄 Refresh</button>
+            </div>
+            <div id="storageInfo">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipment Type Stats -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="card">
+                <h3 style="color: var(--primary-color); margin-bottom: 1rem;" data-i18n="dashboard.computerCardTitle">💻 Computers</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 2.5rem; font-weight: bold;" id="computerCount">0</div>
+                        <div style="color: var(--text-secondary);" data-i18n="stats.totalUnits">Total Units</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: var(--success-color); font-weight: 600;" id="computerWorking">0 Working</div>
+                        <div style="color: var(--warning-color); font-size: 0.875rem;" id="computerMaintenance">0 Maintenance</div>
+                        <div style="color: var(--danger-color); font-size: 0.875rem;" id="computerBroken">0 Broken</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="color: var(--warning-color); margin-bottom: 1rem;" data-i18n="dashboard.printerCardTitle">🖨️ Printers</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 2.5rem; font-weight: bold;" id="printerCount">0</div>
+                        <div style="color: var(--text-secondary);" data-i18n="stats.totalUnits">Total Units</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: var(--success-color); font-weight: 600;" id="printerWorking">0 Working</div>
+                        <div style="color: var(--warning-color); font-size: 0.875rem;" id="printerMaintenance">0 Maintenance</div>
+                        <div style="color: var(--danger-color); font-size: 0.875rem;" id="printerBroken">0 Broken</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="card">
+                <h3 class="card-title" data-i18n="dashboard.chart.type">Equipment by Type</h3>
+                <div class="chart-container">
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title" data-i18n="dashboard.chart.status">Status Distribution</h3>
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title" data-i18n="dashboard.chart.brand">Equipment by Brand</h3>
+                <div class="chart-container">
+                    <canvas id="brandChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title" data-i18n="dashboard.chart.statusByType">Status by Type</h3>
+                <div class="chart-container">
+                    <canvas id="statusByTypeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="js/i18n.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/backgroundManager.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/storageMonitor.js"></script>
+</body>
+</html>

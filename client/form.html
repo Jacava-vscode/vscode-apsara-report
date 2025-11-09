@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Equipment - Apsara Report</title>
+    <script>
+        (function () {
+            try {
+                localStorage.removeItem('apsara-lang');
+            } catch (error) {
+                /* storage unavailable */
+            }
+            document.documentElement.setAttribute('data-lang', 'en');
+            document.documentElement.setAttribute('lang', 'en');
+        })();
+    </script>
+    <script>
+        (function () {
+            const storageKey = 'apsara-theme';
+            try {
+                const storedTheme = localStorage.getItem(storageKey);
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (error) {
+                /* no-op */
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header & Navigation -->
+    <header class="header">
+        <nav class="navbar">
+            <a href="index.html" class="logo" data-i18n="nav.logo">📊 Apsara Report</a>
+            <div class="nav-actions">
+                <ul class="nav-links">
+                    <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+                    <li><a href="dashboard.html" data-i18n="nav.dashboard">Dashboard</a></li>
+                    <li><a href="form.html" class="active" data-i18n="nav.addEntry">Add Entry</a></li>
+                    <li><a href="list.html" data-i18n="nav.viewList">View List</a></li>
+                    <li><a href="settings.html" data-i18n="nav.settings">Settings</a></li>
+                    <li><a href="admin.html" data-i18n="nav.admin">Admin</a></li>
+                </ul>
+                <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" data-i18n-title="theme.toggle.title">🌙 Dark Mode</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title" data-i18n="form.title">Add New Equipment</h1>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <form id="equipmentForm">
+                <div class="form-group">
+                    <label class="form-label" for="type" data-i18n="form.fields.type">Equipment Type *</label>
+                    <select class="form-control" id="type" name="type" required>
+                        <option value="" data-i18n="form.options.type.default">Select Type</option>
+                        <option value="desktop" data-i18n="form.options.type.desktop">Desktop</option>
+                        <option value="laptop" data-i18n="form.options.type.laptop">Laptop</option>
+                        <option value="printer" data-i18n="form.options.type.printer">Printer</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="brand" data-i18n="form.fields.brand">Brand *</label>
+                    <input type="text" class="form-control" id="brand" name="brand" placeholder="e.g., HP, Dell, Canon" data-i18n-placeholder="form.placeholders.brand" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="model" data-i18n="form.fields.model">Model *</label>
+                    <input type="text" class="form-control" id="model" name="model" placeholder="e.g., LaserJet Pro, Inspiron 15" data-i18n-placeholder="form.placeholders.model" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="serialNumber" data-i18n="form.fields.serialNumber">Serial Number</label>
+                    <input type="text" class="form-control" id="serialNumber" name="serialNumber" placeholder="Serial number or asset ID" data-i18n-placeholder="form.placeholders.serialNumber">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="status" data-i18n="form.fields.status">Status *</label>
+                    <select class="form-control" id="status" name="status" required>
+                        <option value="working" data-i18n="form.options.status.working">Working</option>
+                        <option value="maintenance" data-i18n="form.options.status.maintenance">Under Maintenance</option>
+                        <option value="broken" data-i18n="form.options.status.broken">Broken</option>
+                        <option value="done" data-i18n="form.options.status.done">Done</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="location" data-i18n="form.fields.location">Location</label>
+                    <input type="text" class="form-control" id="location" name="location" placeholder="Office location or department" data-i18n-placeholder="form.placeholders.location">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="checkInDate" data-i18n="form.fields.checkInDate">Date Check-in</label>
+                    <input type="date" class="form-control" id="checkInDate" name="checkInDate">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="purchaseDate" data-i18n="form.fields.purchaseDate">Purchase Date</label>
+                    <input type="date" class="form-control" id="purchaseDate" name="purchaseDate">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="warrantyExpiry" data-i18n="form.fields.warrantyExpiry">Warranty Expiry Date</label>
+                    <input type="date" class="form-control" id="warrantyExpiry" name="warrantyExpiry">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="assignedTo" data-i18n="form.fields.assignedTo">Assigned To</label>
+                    <input type="text" class="form-control" id="assignedTo" name="assignedTo" placeholder="Employee name or department" data-i18n-placeholder="form.placeholders.assignedTo">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="customerId" data-i18n="form.fields.customerId">Customer ID</label>
+                    <input type="text" class="form-control" id="customerId" name="customerId" placeholder="Customer reference code" data-i18n-placeholder="form.placeholders.customerId">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="customerPhone" data-i18n="form.fields.customerPhone">Customer Phone</label>
+                    <input type="tel" class="form-control" id="customerPhone" name="customerPhone" placeholder="e.g., 012 345 678" data-i18n-placeholder="form.placeholders.customerPhone">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="images" data-i18n="form.fields.image">Image Attachments</label>
+                    <input type="file" class="form-control" id="images" name="images" accept="image/*" multiple>
+                    <p class="form-helper" style="margin-top: 0.5rem; color: var(--text-secondary);" data-i18n="form.helpers.image">Upload up to 5 JPG or PNG files. Each must be under 2MB.</p>
+                </div>
+
+                <div class="form-group" id="computerSpecsGroup" style="display: none;">
+                    <h3 style="margin-bottom: 1rem; color: var(--primary-color);" data-i18n="form.computerSpecsTitle">Computer Specifications</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="processor" data-i18n="form.fields.processor">Processor</label>
+                        <input type="text" class="form-control" id="processor" name="processor" placeholder="e.g., Intel Core i5" data-i18n-placeholder="form.placeholders.processor">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="ram" data-i18n="form.fields.ram">RAM</label>
+                        <input type="text" class="form-control" id="ram" name="ram" placeholder="e.g., 8GB, 16GB" data-i18n-placeholder="form.placeholders.ram">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="storage" data-i18n="form.fields.storage">Storage</label>
+                        <input type="text" class="form-control" id="storage" name="storage" placeholder="e.g., 256GB SSD, 1TB HDD" data-i18n-placeholder="form.placeholders.storage">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="os" data-i18n="form.fields.os">Operating System</label>
+                        <input type="text" class="form-control" id="os" name="os" placeholder="e.g., Windows 11, Ubuntu" data-i18n-placeholder="form.placeholders.os">
+                    </div>
+                </div>
+
+                <div class="form-group" id="printerSpecsGroup" style="display: none;">
+                    <h3 style="margin-bottom: 1rem; color: var(--primary-color);" data-i18n="form.printerSpecsTitle">Printer Specifications</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="printerType" data-i18n="form.fields.printerType">Printer Type</label>
+                        <select class="form-control" id="printerType" name="printerType">
+                            <option value="" data-i18n="form.options.printerType.default">Select Type</option>
+                            <option value="inkjet" data-i18n="form.options.printerType.inkjet">Inkjet</option>
+                            <option value="laser" data-i18n="form.options.printerType.laser">Laser</option>
+                            <option value="thermal" data-i18n="form.options.printerType.thermal">Thermal</option>
+                            <option value="dot-matrix" data-i18n="form.options.printerType.dotMatrix">Dot Matrix</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="printTechnology" data-i18n="form.fields.printTechnology">Print Technology</label>
+                        <select class="form-control" id="printTechnology" name="printTechnology">
+                            <option value="" data-i18n="form.options.printTechnology.default">Select Technology</option>
+                            <option value="color" data-i18n="form.options.printTechnology.color">Color</option>
+                            <option value="monochrome" data-i18n="form.options.printTechnology.monochrome">Monochrome (Black & White)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="connectivity" data-i18n="form.fields.connectivity">Connectivity</label>
+                        <input type="text" class="form-control" id="connectivity" name="connectivity" placeholder="e.g., USB, WiFi, Ethernet" data-i18n-placeholder="form.placeholders.connectivity">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="notes" data-i18n="form.fields.notes">Notes</label>
+                    <textarea class="form-control" id="notes" name="notes" placeholder="Additional notes or comments" data-i18n-placeholder="form.placeholders.notes"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <span id="submitText" data-i18n="form.buttons.submit">Add Equipment</span>
+                        <span id="submitSpinner" style="display: none;" data-i18n="form.buttons.processing">Processing...</span>
+                    </button>
+                    <button type="reset" class="btn btn-secondary" data-i18n="form.buttons.clear">Clear Form</button>
+                    <a href="list.html" class="btn btn-secondary" data-i18n="form.buttons.cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </main>
+    <script src="js/i18n.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/backgroundManager.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/form.js"></script>
+</body>
+</html>
