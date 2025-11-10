@@ -307,8 +307,17 @@
             if (loginForm) {
                 loginForm.reset();
                 const usernameField = loginForm.querySelector('#loginUsername');
-                if (usernameField && typeof usernameField.focus === 'function') {
-                    usernameField.focus();
+                const passwordField = loginForm.querySelector('#loginPassword');
+                if (usernameField) {
+                    usernameField.disabled = false;
+                    usernameField.readOnly = false;
+                    if (typeof usernameField.focus === 'function') {
+                        usernameField.focus();
+                    }
+                }
+                if (passwordField) {
+                    passwordField.disabled = false;
+                    passwordField.readOnly = false;
                 }
             }
             const loginError = document.getElementById('loginError');
