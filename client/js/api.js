@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://apsara-report-backend-3.onrender.com/api';
 const AUTH_TOKEN_STORAGE_KEY = 'apsara-auth-token';
 const AUTH_STATE_KEY = 'apsara-auth-state';
 const AUTH_PROFILE_KEY = 'apsara-auth-profile';
