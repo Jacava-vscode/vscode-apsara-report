@@ -51,15 +51,17 @@
     </header>
 
     <!-- Main Content -->
-    <main class="container">
-        <div class="card">
-            <div class="card-header">
-                <h1 class="card-title" data-i18n="form.title">Add New Equipment</h1>
-            </div>
+    <main class="container form-page">
+        <div class="form-layout">
+            <section class="form-main card">
+                <div class="card-header">
+                    <h1 class="card-title" data-i18n="form.title">Add New Equipment</h1>
+                    <p class="card-subtitle">Quickly register equipment with clear fields and attachments.</p>
+                </div>
 
-            <div id="alertContainer"></div>
+                <div id="alertContainer"></div>
 
-            <form id="equipmentForm">
+                <form id="equipmentForm">
                 <div class="form-group">
                     <label class="form-label" for="type" data-i18n="form.fields.type">Equipment Type *</label>
                     <select class="form-control" id="type" name="type" required>
@@ -203,6 +205,33 @@
                     <a href="list.html" class="btn btn-secondary" data-i18n="form.buttons.cancel">Cancel</a>
                 </div>
             </form>
+            </section>
+
+            <aside class="form-sidebar card">
+                <div class="sidebar-header">
+                    <h2 class="sidebar-title">Summary & Actions</h2>
+                </div>
+                <div class="sidebar-body">
+                    <div class="meta-row"><strong>Type:</strong> <span id="summaryType">—</span></div>
+                    <div class="meta-row"><strong>Brand / Model:</strong> <span id="summaryBrandModel">—</span></div>
+                    <div class="meta-row"><strong>Status:</strong> <span id="summaryStatus">—</span></div>
+                    <div class="meta-row"><strong>Assigned:</strong> <span id="summaryAssigned">—</span></div>
+                    <hr />
+                    <div class="sidebar-actions">
+                        <button id="sidebarSubmit" class="btn btn-primary">Add Equipment</button>
+                        <button id="sidebarClear" class="btn btn-secondary">Clear</button>
+                    </div>
+                    <hr />
+                    <div class="sidebar-note">
+                        <h4>Tips</h4>
+                        <ul>
+                            <li>Fill required fields marked with *</li>
+                            <li>Attach images for easy identification</li>
+                            <li>Use exact serial numbers for tracking</li>
+                        </ul>
+                    </div>
+                </div>
+            </aside>
         </div>
     </main>
     <script src="js/i18n.js"></script>
