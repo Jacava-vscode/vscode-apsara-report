@@ -29,6 +29,28 @@
             }
         })();
     </script>
+    <script>
+        (function () {
+            try {
+                const id = localStorage.getItem('apsara-font');
+                if (id) {
+                    document.documentElement.setAttribute('data-font', id);
+                    const map = {
+                      battambang: "'Battambang', 'Noto Sans Khmer', serif",
+                      bokor: "'Bokor', 'Noto Sans Khmer', serif",
+                      writhand: "'Writhand', 'Noto Sans Khmer', serif",
+                      'khmer-s4': "'Khmer S4', 'Noto Sans Khmer', serif",
+                      'sbbic-serif': "'Khmer SBBIC Serif', 'Noto Serif', serif",
+                      arial: 'Arial, Helvetica, sans-serif',
+                      'times-new-roman': "'Times New Roman', Times, serif"
+                    };
+                    const fam = map[id] || map['battambang'];
+                    document.documentElement.style.setProperty('--app-font', fam);
+                    document.documentElement.style.setProperty('--khmer-font', fam);
+                }
+            } catch (e) { /* ignore */ }
+        })();
+    </script>
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>

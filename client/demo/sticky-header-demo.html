@@ -5,6 +5,28 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Sticky Header Demo</title>
   <link rel="stylesheet" href="../css/styles.css">
+  <script>
+    (function(){
+      try{
+        const id = localStorage.getItem('apsara-font');
+        if (id) {
+          document.documentElement.setAttribute('data-font', id);
+          const map = {
+            battambang: "'Battambang', 'Noto Sans Khmer', serif",
+            bokor: "'Bokor', 'Noto Sans Khmer', serif",
+            writhand: "'Writhand', 'Noto Sans Khmer', serif",
+            'khmer-s4': "'Khmer S4', 'Noto Sans Khmer', serif",
+            'sbbic-serif': "'Khmer SBBIC Serif', 'Noto Serif', serif",
+            arial: 'Arial, Helvetica, sans-serif',
+            'times-new-roman': "'Times New Roman', Times, serif"
+          };
+          const fam = map[id] || map['battambang'];
+          document.documentElement.style.setProperty('--app-font', fam);
+          document.documentElement.style.setProperty('--khmer-font', fam);
+        }
+      }catch(e){}
+    })();
+  </script>
   <style>
     body { margin: 0; font-family: var(--app-font, system-ui, 'Segoe UI', Roboto, Arial); }
     .header { height: 88px; display:flex; align-items:center; padding: 0 24px; background: #fff; box-shadow: 0 1px 0 rgba(0,0,0,0.04); position: sticky; top: 0; z-index: 1200 }
