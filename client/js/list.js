@@ -304,8 +304,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateTableHeaderShadow() {
     try {
       const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 0;
-      // Apply to all tables on the page
-      const tables = Array.from(document.querySelectorAll('table'));
+      // Apply to tables annotated for sticky-header behavior: either have class `js-sticky-header` or are inside `.grid-widget`
+      const tables = Array.from(document.querySelectorAll('table.js-sticky-header, .grid-widget table'));
       if (!tables.length) return;
       tables.forEach((table) => {
         const thead = table.querySelector('thead');
@@ -505,7 +505,7 @@ function renderTable() {
   }
 
   const tableHTML = `
-    <table>
+  <table class="js-sticky-header">
       <thead>
         <tr>
           <th>${translate('common.labels.type', { fallback: 'Type' })}</th>

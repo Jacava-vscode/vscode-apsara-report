@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sticky Header Demo</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    body { margin: 0; font-family: system-ui,Segoe UI,Roboto,Arial; }
+    .header { height: 88px; display:flex; align-items:center; padding: 0 24px; background: #fff; box-shadow: 0 1px 0 rgba(0,0,0,0.04); position: sticky; top: 0; z-index: 1200 }
+    main { padding: 24px; }
+    .spacer { height: 900px; }
+    .demo-table { max-width: 1100px; margin-bottom: 48px; }
+  </style>
+</head>
+<body>
+  <div class="header">Demo Header (sticky)</div>
+  <main>
+    <h1>Sticky Header Demo</h1>
+    <p>Scroll down to see the table header stick under the page header and receive a subtle shadow.</p>
+
+    <div class="spacer"></div>
+
+    <div class="card demo-table">
+      <h2>Main Equipment Table (annotated)</h2>
+      <!-- This table is annotated for sticky behavior -->
+      <table class="js-sticky-header">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Brand</th>
+            <th>Model</th>
+            <th>Serial</th>
+            <th>Location</th>
+            <th>Assigned</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+        ${Array.from({length:40}).map((_,i)=>`<tr><td>Desktop</td><td>Brand ${i}</td><td>Model ${i}</td><td>S${1000+i}</td><td>Office ${i%5}</td><td>User ${i%7}</td><td>2025-11-${(i%30)+1}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card demo-table">
+      <h2>Widget Table (inside .grid-widget)</h2>
+      <div class="grid-widget">
+        <table>
+          <thead><tr><th>Widget</th><th>Value</th></tr></thead>
+          <tbody>
+            ${Array.from({length:20}).map((_,i)=>`<tr><td>Metric ${i}</td><td>${Math.round(Math.random()*100)}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+  </main>
+
+  <script src="../js/list.js"></script>
+  <script>
+    // Rendered demo uses simple table HTML; list.js contains logic to measure header and toggle shadows.
+    // No extra initialization required.
+  </script>
+</body>
+</html>
