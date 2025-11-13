@@ -116,11 +116,24 @@ if ($Mode -eq 'root') {
     # subdir mode: copy monorepo server/ into backend repo under $TargetSubdir
     $targetPath = Join-Path $backendDir $TargetSubdir
     Write-Host "Preparing target subdir: $targetPath"
+    if (Test-Path (Join-Path $targetPath 'server')) {
+        Write-Host "Removing stray $targetPath/server folder (should not exist)"
+        Remove-Item -LiteralPath (Join-Path $targetPath 'server') -Recurse -Force -ErrorAction SilentlyContinue
+    }
     if (Test-Path $targetPath) {
         Write-Host "Removing existing $targetPath"
         Remove-Item -LiteralPath $targetPath -Recurse -Force -ErrorAction SilentlyContinue
     }
     New-Item -ItemType Directory -Path $targetPath -Force | Out-Null
+
+    # Move any files/folders in backend repo root (except .git and $TargetSubdir) into $TargetSubdir
+    $rootItems = Get-ChildItem -LiteralPath $backendDir -Force | Where-Object { $_.Name -ne '.git' -and $_.Name -ne $TargetSubdir }
+    foreach ($item in $rootItems) {
+        $src = $item.FullName
+        $dest = Join-Path $targetPath $item.Name
+        Write-Host "Moving stray $src -> $dest"
+        Move-Item -LiteralPath $src -Destination $dest -Force
+    }
 
     Write-Host "Copying server/ to backend repo subdir '$TargetSubdir'..."
     Get-ChildItem -LiteralPath $serverSrc -Force | Where-Object { $_.Name -ne '.git' } | ForEach-Object {

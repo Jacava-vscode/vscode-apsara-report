@@ -292,6 +292,75 @@ document.addEventListener('DOMContentLoaded', () => {
       renderTable();
     });
   }
+
+  // Dynamically set header height CSS variable and toggle table header shadow on scroll
+  const headerEl = document.querySelector('.header');
+  const tableContainer = document.getElementById('tableContainer');
+  function setHeaderHeightVar() {
+    const h = headerEl ? headerEl.offsetHeight : 0;
+    document.documentElement.style.setProperty('--header-height', `${h}px`);
+  }
+
+  function updateTableHeaderShadow() {
+    try {
+      const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 0;
+      // Apply to all tables on the page
+      const tables = Array.from(document.querySelectorAll('table'));
+      if (!tables.length) return;
+      tables.forEach((table) => {
+        const thead = table.querySelector('thead');
+        if (!thead) return;
+        const rect = table.getBoundingClientRect();
+        if (rect.top <= headerHeight) {
+          thead.classList.add('has-shadow');
+        } else {
+          thead.classList.remove('has-shadow');
+        }
+      });
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // Initial set and listeners
+  setHeaderHeightVar();
+  // Make header cells keyboard-focusable and add focus handlers
+  function makeHeaderCellsFocusable() {
+    const theads = Array.from(document.querySelectorAll('table thead'));
+    theads.forEach((thead) => {
+      const ths = Array.from(thead.querySelectorAll('th'));
+      ths.forEach((th) => {
+        try {
+          if (!th.hasAttribute('tabindex')) th.setAttribute('tabindex', '0');
+          // Add focus/blur handlers to ensure visible focus state and shadow
+          if (!th.__focusHandlersAttached) {
+            th.addEventListener('focus', () => {
+              thead.classList.add('has-shadow');
+              thead.classList.add('has-focus');
+            });
+            th.addEventListener('blur', () => {
+              thead.classList.remove('has-focus');
+            });
+            th.__focusHandlersAttached = true;
+          }
+        } catch (e) {
+          /* ignore */
+        }
+      });
+    });
+  }
+  window.addEventListener('resize', () => {
+    setHeaderHeightVar();
+    updateTableHeaderShadow();
+  });
+  window.addEventListener('scroll', () => {
+    updateTableHeaderShadow();
+  }, { passive: true });
+  // also run after renderTable updates
+  window.requestAnimationFrame(() => {
+    updateTableHeaderShadow();
+    makeHeaderCellsFocusable();
+  });
 });
 
 // Load equipment from API
