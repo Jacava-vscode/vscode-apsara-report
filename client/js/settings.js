@@ -343,6 +343,17 @@
       const id = e.target.value;
       const family = e.target.selectedOptions[0].dataset.family;
       applyFont(id, family);
+      // Auto-save selection so it applies across pages and browser sessions immediately
+      try {
+        if (id) {
+          localStorage.setItem(FONT_KEY, id);
+        } else {
+          localStorage.removeItem(FONT_KEY);
+        }
+      } catch (err) {
+        // ignore storage errors
+        console.warn('Failed to auto-save font selection', err);
+      }
     });
   };
 
