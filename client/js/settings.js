@@ -302,6 +302,61 @@
     { id: 'times-new-roman', label: 'Times New Roman', family: "'Times New Roman', Times, serif" }
   ];
 
+  // Candidate Khmer / local fonts to probe on the user's system
+  const CANDIDATE_SYSTEM_KHMER_FONTS = [
+    'Battambang', 'Bokor', 'Noto Sans Khmer', 'Khmer OS System', 'Khmer OS', 'Khmer OS Siemreap',
+    'Khmer OS Muol', 'Khmer OS Muol Light', 'Khmer SBBIC Serif', 'Khmer S4', 'Writhand',
+    'Kantumruy', 'Khmer UI', 'Moul', 'Limon', 'Hanuman'
+  ];
+
+  // Check whether a font is available on the system/browser.
+  // Prefer FontFaceSet.check if available, otherwise use a width-measurement fallback.
+  const isFontAvailable = (fontName) => {
+    try {
+      if (document.fonts && typeof document.fonts.check === 'function') {
+        // check will return true for available local or loaded fonts
+        return document.fonts.check(`12px "${fontName}"`);
+      }
+    } catch (e) {
+      // ignore and fallback
+    }
+
+    // Fallback measurement technique: compare widths between target font and generic fallback
+    try {
+      const testString = 'បុរីគុជអាស៊ី';
+      const span = document.createElement('span');
+      span.style.position = 'absolute';
+      span.style.left = '-9999px';
+      span.style.fontSize = '48px';
+      span.style.fontFamily = `${fontName}, monospace`;
+      span.textContent = testString;
+      document.body.appendChild(span);
+      const widthWithFont = span.getBoundingClientRect().width;
+      span.style.fontFamily = 'monospace';
+      const widthWithMono = span.getBoundingClientRect().width;
+      document.body.removeChild(span);
+      return Math.abs(widthWithFont - widthWithMono) > 0.1;
+    } catch (err) {
+      return false;
+    }
+  };
+
+  // Probe a list of candidate fonts and return those available on the system
+  const detectAvailableFonts = (candidates) => {
+    const found = [];
+    if (!Array.isArray(candidates)) return found;
+    for (const name of candidates) {
+      try {
+        if (isFontAvailable(name)) {
+          found.push(name);
+        }
+      } catch (e) {
+        // continue
+      }
+    }
+    return found;
+  };
+
   const applyFont = (fontId, family) => {
     if (!fontId) {
       document.documentElement.removeAttribute('data-font');
@@ -365,10 +420,38 @@
       const list = await resp.json();
       // Expected list entries: { id, label, family, filename }
       const opts = list.map(f => ({ id: f.id, label: f.label || f.id, family: f.family || f.label || f.id }));
+
+      // Detect system-installed Khmer fonts and add them if not already present
+      try {
+        const detected = detectAvailableFonts(CANDIDATE_SYSTEM_KHMER_FONTS);
+        detected.forEach(name => {
+          const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          if (!opts.find(o => o.id === id) && !DEFAULT_FONT_OPTIONS.find(o => o.id === id)) {
+            opts.push({ id, label: name, family: `"${name}", 'Noto Sans Khmer', serif` });
+          }
+        });
+      } catch (err) {
+        // non-fatal
+        console.warn('Font detection failed', err);
+      }
+
       populateFontSelect(opts.length ? opts : DEFAULT_FONT_OPTIONS);
     } catch (err) {
       // Fallback to built-in defaults
-      populateFontSelect(DEFAULT_FONT_OPTIONS);
+      // If manifest not found, still augment defaults with detected system fonts
+      try {
+        const detected = detectAvailableFonts(CANDIDATE_SYSTEM_KHMER_FONTS);
+        const augmented = DEFAULT_FONT_OPTIONS.slice();
+        detected.forEach(name => {
+          const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          if (!augmented.find(o => o.id === id)) {
+            augmented.push({ id, label: name, family: `"${name}", 'Noto Sans Khmer', serif` });
+          }
+        });
+        populateFontSelect(augmented);
+      } catch (e) {
+        populateFontSelect(DEFAULT_FONT_OPTIONS);
+      }
     }
   }
 

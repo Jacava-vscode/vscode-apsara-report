@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Khmer Font Example — Apsara Report</title>
+    <script>
+        (function () {
+            try {
+                const id = localStorage.getItem('apsara-font');
+                if (id) {
+                    document.documentElement.setAttribute('data-font', id);
+                    const map = {
+                      battambang: "'Battambang', 'Noto Sans Khmer', serif",
+                      bokor: "'Bokor', 'Noto Sans Khmer', serif",
+                      writhand: "'Writhand', 'Noto Sans Khmer', serif",
+                      'khmer-s4': "'Khmer S4', 'Noto Sans Khmer', serif",
+                      'sbbic-serif': "'Khmer SBBIC Serif', 'Noto Serif', serif",
+                      arial: 'Arial, Helvetica, sans-serif',
+                      'times-new-roman': "'Times New Roman', Times, serif"
+                    };
+                    const fam = map[id] || map['battambang'];
+                    document.documentElement.style.setProperty('--app-font', fam);
+                    document.documentElement.style.setProperty('--khmer-font', fam);
+                }
+            } catch (e) { /* ignore */ }
+        })();
+    </script>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .demo-wrapper { max-width:900px; margin:2rem auto; padding:1rem; }
+        .phrase { margin:1rem 0; }
+        .notice { color:var(--text-secondary); font-size:0.95rem; }
+        /* ensure the demo uses the app font variable */
+        .demo-wrapper { font-family: var(--app-font); }
+    </style>
+</head>
+<body>
+    <main class="demo-wrapper">
+        <h1>Khmer Font Example</h1>
+        <p class="notice">This page applies whatever font is selected in Settings (uses <code>--app-font</code>).</p>
+
+        <div class="phrase" style="font-size:1.6rem;">បុរីគុជអាស៊ី</div>
+        <div class="phrase" style="font-size:1.25rem;">បុរីគុជអាស៊ី — medium size</div>
+        <div class="phrase" style="font-size:0.95rem;">បុរីគុជអាស៊ី — body size</div>
+
+        <hr>
+        <p class="notice">If the chosen Khmer font is self-hosted in <code>client/fonts/</code> and added to the manifest, it will render here. If not, the browser will fallback to system fonts.</p>
+        <p class="notice">To refresh available fonts after adding files, open Settings and click <strong>Refresh</strong>.</p>
+
+        <p><a href="../settings.html">Open Settings</a> · <a href="../index.html">Home</a></p>
+    </main>
+</body>
+</html>
