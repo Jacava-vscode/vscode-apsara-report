@@ -19,7 +19,8 @@ Notes:
 
 param(
     [string]$BackendRepoUrl = 'https://github.com/Jacava-vscode/apsara-report-backend.git',
-    [string]$TargetBranch = 'main'
+    [string]$TargetBranch = 'main',
+    [switch]$DryRun
 )
 
 $ErrorActionPreference = 'Stop'
@@ -54,8 +55,24 @@ if (-not (Test-Path (Join-Path $backendDir '.git'))) {
     Push-Location $backendDir
     try {
         git fetch origin
-        git checkout $TargetBranch
-        git pull --ff-only origin $TargetBranch
+        try {
+            git checkout $TargetBranch 2>$null | Out-Null
+        } catch {
+            Write-Host "Note: git checkout returned a message (maybe already on $TargetBranch). Continuing..."
+        }
+        # Try a fast-forward pull first. If that fails (non-fast-forward),
+        # fall back to a safe rebase of local commits onto origin.
+        try {
+            git pull --ff-only origin $TargetBranch
+        } catch {
+            Write-Host "Fast-forward pull failed. Attempting rebase onto origin/$TargetBranch..."
+            try {
+                git pull --rebase origin $TargetBranch
+            } catch {
+                Write-Host "Rebase failed. Please resolve conflicts manually in $backendDir and re-run the script."
+                throw
+            }
+        }
     } finally {
         Pop-Location
     }
@@ -90,6 +107,23 @@ try {
     } catch {
         Write-Host "Warning: git checkout failed or already on branch. Continuing..."
     }
+
+    # If dry-run was requested, show the changes that would be committed/pushed and exit.
+    if ($DryRun) {
+        Write-Host "Dry-run mode: showing planned changes (no commit/push will be performed)"
+        $status = git status --porcelain
+        if ([string]::IsNullOrWhiteSpace($status)) {
+            Write-Host "No changes detected. Nothing would be committed."
+            exit 0
+        }
+        Write-Host "Git status (porcelain):"
+        git status --porcelain
+        Write-Host "Files changed (name/status):"
+        git --no-pager diff --name-status
+        Write-Host "End of dry-run preview. No changes were pushed."
+        exit 0
+    }
+
     git add -A
     $status = git status --porcelain
     if ([string]::IsNullOrWhiteSpace($status)) {
