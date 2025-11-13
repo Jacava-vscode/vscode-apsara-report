@@ -12,7 +12,7 @@
     'includeFooter'
   ];
 
-  const PAPER_SIZES = ['auto', 'a4', 'letter'];
+  const PAPER_SIZES = ['auto', 'a4', 'a5', 'letter'];
 
   const DEFAULT_SETTINGS = {
     includeMeta: true,
