@@ -1082,9 +1082,12 @@ function printViewedEquipment(overrideSettings) {
 
   const pageSizeCss = buildPageSizeCss(paperSize);
 
+  // Try to reference the main stylesheet so font-face rules and CSS variables are available
+  const mainCssLink = (document.querySelector('link[href$="styles.css"]') || {}).href || 'css/styles.css';
+
   const styles = `
     ${pageSizeCss}
-    body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 24px; color: #0f172a; }
+    body { font-family: var(--app-font, 'Battambang'), system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', Arial, sans-serif; margin: 0; padding: 24px; color: #0f172a; }
     h1 { margin-top: 0; font-size: 1.75rem; }
     h2 { margin: 24px 0 12px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; }
     .meta { color: #64748b; font-size: 0.9rem; margin-bottom: 16px; }
@@ -1112,6 +1115,7 @@ function printViewedEquipment(overrideSettings) {
       <head>
         <meta charset="utf-8" />
         <title>${escapeHtml(documentTitle)}</title>
+        <link rel="stylesheet" href="${mainCssLink}">
         <style>${styles}</style>
       </head>
       <body>
