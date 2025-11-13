@@ -201,6 +201,11 @@
                         <option value="letter" data-i18n="list.viewModal.previewPaperSize.letter">Letter</option>
                     </select>
                 </div>
+                <div class="view-tabs" role="tablist" aria-label="View pages" style="display:flex; gap:0.5rem;">
+                    <button id="viewTabDetails" role="tab" aria-selected="true" aria-controls="viewPageDetails" class="tab-btn btn btn-secondary btn-sm">Details</button>
+                    <button id="viewTabImages" role="tab" aria-selected="false" aria-controls="viewPageImages" class="tab-btn btn btn-secondary btn-sm">Images</button>
+                </div>
+                <div id="viewPageDetails" role="tabpanel" aria-labelledby="viewTabDetails" aria-hidden="false">
                 <div id="viewDetails" style="display: grid; gap: 1.5rem;">
                     <div class="detail-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
                         <div class="detail-item" style="display: flex; flex-direction: column; gap: 0.25rem;">
@@ -295,10 +300,18 @@
                         </div>
                     </div>
                 </div>
-                <div style="border-top: 1px solid var(--border-color);"></div>
-                <div style="text-align: center; display: flex; flex-direction: column; gap: 1rem;">
-                    <p id="viewImageMessage" data-i18n="list.viewModal.noImage" style="color: var(--text-secondary); margin: 0;">No images attached for this item.</p>
-                    <div id="viewImageGallery" class="image-gallery" style="display: none;"></div>
+                </div>
+                <div id="viewPageImages" role="tabpanel" aria-labelledby="viewTabImages" aria-hidden="true" style="display:none;">
+                    <div style="border-top: 1px solid var(--border-color);"></div>
+                    <div style="text-align: center; display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                        <p id="viewImageMessage" data-i18n="list.viewModal.noImage" style="color: var(--text-secondary); margin: 0;">No images attached for this item.</p>
+                        <div id="viewImageGallery" class="image-gallery" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <div class="view-nav" style="margin-top: 0.75rem; display:flex; justify-content:flex-end; gap:0.5rem;">
+                    <button id="viewBackBtn" class="btn btn-secondary btn-sm" type="button" aria-label="Previous page">◀ Back</button>
+                    <button id="viewNextBtn" class="btn btn-secondary btn-sm" type="button" aria-label="Next page">Next ▶</button>
                 </div>
             </div>
         </div>

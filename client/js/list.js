@@ -43,6 +43,12 @@ const PRINT_SETTINGS_FALLBACK = {
   paperSize: 'auto'
 };
 
+// When true, the view modal will automatically open the Images page if attachments exist
+const VIEW_AUTO_OPEN_IMAGES = true;
+
+// current view page inside modal ('details'|'images')
+let currentViewModalPage = 'details';
+
 let paperSizeControl = null;
 
 const escapeHtml = (value) => {
@@ -257,6 +263,29 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initializePaperSizeControl();
+
+  // Wire view modal tab buttons (if present)
+  const viewTabDetails = document.getElementById('viewTabDetails');
+  const viewTabImages = document.getElementById('viewTabImages');
+  if (viewTabDetails) {
+    viewTabDetails.addEventListener('click', () => showViewPage('details'));
+  }
+  if (viewTabImages) {
+    viewTabImages.addEventListener('click', () => showViewPage('images'));
+  }
+  // Wire next/back buttons
+  const viewNextBtn = document.getElementById('viewNextBtn');
+  const viewBackBtn = document.getElementById('viewBackBtn');
+  if (viewNextBtn) {
+    viewNextBtn.addEventListener('click', () => {
+      if (currentViewModalPage === 'details') showViewPage('images');
+    });
+  }
+  if (viewBackBtn) {
+    viewBackBtn.addEventListener('click', () => {
+      if (currentViewModalPage === 'images') showViewPage('details');
+    });
+  }
 
   if (window.I18n) {
     I18n.onChange(() => {
@@ -675,7 +704,7 @@ async function viewEquipment(id) {
         ? [equipment.imageData]
         : [];
 
-    if (attachments.length > 0 && galleryElement) {
+  if (attachments.length > 0 && galleryElement) {
       attachments.forEach((src, index) => {
         const link = document.createElement('a');
         link.href = src;
@@ -712,8 +741,16 @@ async function viewEquipment(id) {
       }
     }
 
-  syncPaperSizeControl();
-  document.getElementById('viewModal').style.display = 'block';
+    // Auto-open the images page if attachments exist and the feature is enabled
+    try {
+      if (attachments.length > 0 && VIEW_AUTO_OPEN_IMAGES) {
+        showViewPage('images');
+      } else {
+        showViewPage('details');
+      }
+    } catch (e) { /* ignore if paging not present */ }
+    syncPaperSizeControl();
+    document.getElementById('viewModal').style.display = 'block';
   } catch (error) {
     console.error('Error loading equipment image:', error);
     currentViewedEquipment = null;
@@ -740,6 +777,54 @@ function closeViewModal() {
 
   if (messageElement) {
     messageElement.style.display = 'block';
+  }
+}
+
+// Switch between pages inside the view modal (details / images)
+function showViewPage(page) {
+  const detailsPage = document.getElementById('viewPageDetails');
+  const imagesPage = document.getElementById('viewPageImages');
+  const tabDetails = document.getElementById('viewTabDetails');
+  const tabImages = document.getElementById('viewTabImages');
+  const nextBtn = document.getElementById('viewNextBtn');
+  const backBtn = document.getElementById('viewBackBtn');
+  if (!detailsPage || !imagesPage) return;
+  if (page === 'images') {
+    detailsPage.style.display = 'none';
+    imagesPage.style.display = 'block';
+    detailsPage.setAttribute('aria-hidden', 'true');
+    imagesPage.setAttribute('aria-hidden', 'false');
+    if (tabDetails) {
+      tabDetails.classList.remove('active');
+      tabDetails.setAttribute('aria-selected', 'false');
+      tabDetails.setAttribute('tabindex', '-1');
+    }
+    if (tabImages) {
+      tabImages.classList.add('active');
+      tabImages.setAttribute('aria-selected', 'true');
+      tabImages.setAttribute('tabindex', '0');
+    }
+    if (nextBtn) nextBtn.disabled = true;
+    if (backBtn) backBtn.disabled = false;
+    currentViewModalPage = 'images';
+  } else {
+    detailsPage.style.display = 'block';
+    imagesPage.style.display = 'none';
+    detailsPage.setAttribute('aria-hidden', 'false');
+    imagesPage.setAttribute('aria-hidden', 'true');
+    if (tabDetails) {
+      tabDetails.classList.add('active');
+      tabDetails.setAttribute('aria-selected', 'true');
+      tabDetails.setAttribute('tabindex', '0');
+    }
+    if (tabImages) {
+      tabImages.classList.remove('active');
+      tabImages.setAttribute('aria-selected', 'false');
+      tabImages.setAttribute('tabindex', '-1');
+    }
+    if (nextBtn) nextBtn.disabled = false;
+    if (backBtn) backBtn.disabled = true;
+    currentViewModalPage = 'details';
   }
 }
 

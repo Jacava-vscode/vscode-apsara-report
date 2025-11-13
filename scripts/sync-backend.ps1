@@ -20,6 +20,8 @@ Notes:
 param(
     [string]$BackendRepoUrl = 'https://github.com/Jacava-vscode/apsara-report-backend.git',
     [string]$TargetBranch = 'main',
+    [ValidateSet('root','subdir')][string]$Mode = 'subdir',
+    [string]$TargetSubdir = 'server',
     [switch]$DryRun
 )
 
@@ -54,14 +56,24 @@ if (-not (Test-Path (Join-Path $backendDir '.git'))) {
     Write-Host "Backend repo exists. Fetching latest..."
     Push-Location $backendDir
     try {
+        # Ensure origin URL matches requested remote (if provided)
+        try {
+            $currentRemote = git config --get remote.origin.url 2>$null
+        } catch {
+            $currentRemote = $null
+        }
+        if ($currentRemote -and $BackendRepoUrl -and ($currentRemote -ne $BackendRepoUrl)) {
+            Write-Host "Updating origin remote from $currentRemote to $BackendRepoUrl"
+            git remote set-url origin $BackendRepoUrl
+        }
+
         git fetch origin
         try {
             git checkout $TargetBranch 2>$null | Out-Null
         } catch {
             Write-Host "Note: git checkout returned a message (maybe already on $TargetBranch). Continuing..."
         }
-        # Try a fast-forward pull first. If that fails (non-fast-forward),
-        # fall back to a safe rebase of local commits onto origin.
+        # Try a fast-forward pull first. If that fails (non-fast-forward), fall back to rebase.
         try {
             git pull --ff-only origin $TargetBranch
         } catch {
@@ -78,25 +90,48 @@ if (-not (Test-Path (Join-Path $backendDir '.git'))) {
     }
 }
 
-# Clean backend dir except .git
-Write-Host "Cleaning backend dir (preserving .git)..."
-Get-ChildItem -LiteralPath $backendDir -Force | Where-Object { $_.Name -ne '.git' } | ForEach-Object {
-    $path = $_.FullName
-    Write-Host "Removing: $path"
-    Remove-Item -LiteralPath $path -Recurse -Force -ErrorAction SilentlyContinue
-}
-
-# Copy server content into backend dir
-Write-Host "Copying server/ to backend repo..."
+# Copy strategy depends on mode
 $copyOptions = @{Recurse = $true; Force = $true}
-Get-ChildItem -LiteralPath $serverSrc -Force | Where-Object { $_.Name -ne '.git' } | ForEach-Object {
-    $src = $_.FullName
-    $dest = Join-Path $backendDir $_.Name
-    Write-Host "Copying $src -> $dest"
-    if (Test-Path $dest) {
-        Remove-Item -LiteralPath $dest -Recurse -Force -ErrorAction SilentlyContinue
+if ($Mode -eq 'root') {
+    # Clean backend dir except .git
+    Write-Host "Cleaning backend dir (preserving .git)..."
+    Get-ChildItem -LiteralPath $backendDir -Force | Where-Object { $_.Name -ne '.git' } | ForEach-Object {
+        $path = $_.FullName
+        Write-Host "Removing: $path"
+        Remove-Item -LiteralPath $path -Recurse -Force -ErrorAction SilentlyContinue
     }
-    Copy-Item -LiteralPath $src -Destination $dest @copyOptions
+
+    # Copy server content into backend repo root
+    Write-Host "Copying server/ to backend repo root..."
+    Get-ChildItem -LiteralPath $serverSrc -Force | Where-Object { $_.Name -ne '.git' } | ForEach-Object {
+        $src = $_.FullName
+        $dest = Join-Path $backendDir $_.Name
+        Write-Host "Copying $src -> $dest"
+        if (Test-Path $dest) {
+            Remove-Item -LiteralPath $dest -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        Copy-Item -LiteralPath $src -Destination $dest @copyOptions
+    }
+} else {
+    # subdir mode: copy monorepo server/ into backend repo under $TargetSubdir
+    $targetPath = Join-Path $backendDir $TargetSubdir
+    Write-Host "Preparing target subdir: $targetPath"
+    if (Test-Path $targetPath) {
+        Write-Host "Removing existing $targetPath"
+        Remove-Item -LiteralPath $targetPath -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    New-Item -ItemType Directory -Path $targetPath -Force | Out-Null
+
+    Write-Host "Copying server/ to backend repo subdir '$TargetSubdir'..."
+    Get-ChildItem -LiteralPath $serverSrc -Force | Where-Object { $_.Name -ne '.git' } | ForEach-Object {
+        $src = $_.FullName
+        $dest = Join-Path $targetPath $_.Name
+        Write-Host "Copying $src -> $dest"
+        if (Test-Path $dest) {
+            Remove-Item -LiteralPath $dest -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        Copy-Item -LiteralPath $src -Destination $dest @copyOptions
+    }
 }
 
 # Commit and push if there are changes
@@ -131,7 +166,11 @@ try {
         exit 0
     }
 
-    $msg = "Sync backend from monorepo at $(Get-Date -Format o)"
+    if ($Mode -eq 'subdir') {
+        $msg = "Sync backend: update '$TargetSubdir' from monorepo/server at $(Get-Date -Format o)"
+    } else {
+        $msg = "Sync backend from monorepo at $(Get-Date -Format o)"
+    }
     git commit -m $msg
     Write-Host "Pushing to origin/$TargetBranch..."
     git push origin $TargetBranch
