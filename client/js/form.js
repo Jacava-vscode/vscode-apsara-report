@@ -166,4 +166,57 @@ document.addEventListener('DOMContentLoaded', () => {
       imageInput.value = '';
     }
   });
+
+  // Sidebar buttons wiring and live summary
+  const sidebarSubmit = document.getElementById('sidebarSubmit');
+  const sidebarClear = document.getElementById('sidebarClear');
+  const summaryType = document.getElementById('summaryType');
+  const summaryBrandModel = document.getElementById('summaryBrandModel');
+  const summaryStatus = document.getElementById('summaryStatus');
+  const summaryAssigned = document.getElementById('summaryAssigned');
+
+  function updateSummary() {
+    if (summaryType) summaryType.textContent = (typeSelect.value && typeSelect.value !== '') ? typeSelect.options[typeSelect.selectedIndex].text : '—';
+    const brandVal = document.getElementById('brand')?.value || '';
+    const modelVal = document.getElementById('model')?.value || '';
+    if (summaryBrandModel) summaryBrandModel.textContent = (brandVal || modelVal) ? `${brandVal} ${modelVal}`.trim() : '—';
+    const statusVal = document.getElementById('status')?.value || '';
+    if (summaryStatus) summaryStatus.textContent = statusVal ? statusVal : '—';
+    const assignedVal = document.getElementById('assignedTo')?.value || '';
+    if (summaryAssigned) summaryAssigned.textContent = assignedVal ? assignedVal : '—';
+  }
+
+  // Wire sidebar actions
+  if (sidebarSubmit) {
+    sidebarSubmit.addEventListener('click', (e) => {
+      e.preventDefault();
+      // prefer requestSubmit when available to keep validity checks
+      if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit();
+      } else {
+        // fallback: trigger click on main submit button
+        submitBtn.click();
+      }
+    });
+  }
+
+  if (sidebarClear) {
+    sidebarClear.addEventListener('click', (e) => {
+      e.preventDefault();
+      form.reset();
+      updateSummary();
+    });
+  }
+
+  // Live update summary when relevant fields change
+  ['type','brand','model','status','assignedTo'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', updateSummary);
+      el.addEventListener('change', updateSummary);
+    }
+  });
+
+  // initialize summary
+  updateSummary();
 });
