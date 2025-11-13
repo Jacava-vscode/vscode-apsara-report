@@ -468,6 +468,10 @@ async function editEquipment(id) {
     document.getElementById('editAssignedTo').value = equipment.assignedTo || '';
     document.getElementById('editCustomerId').value = equipment.customerId || '';
     document.getElementById('editCustomerPhone').value = equipment.customerPhone || '';
+    const notesField = document.getElementById('editNotes');
+    if (notesField) {
+      notesField.value = equipment.notes || '';
+    }
 
     const checkInDateField = document.getElementById('editCheckInDate');
     if (checkInDateField) {
@@ -519,6 +523,10 @@ document.addEventListener('DOMContentLoaded', () => {
         customerId: Utils.normalizeText(document.getElementById('editCustomerId').value),
         customerPhone: Utils.normalizeText(document.getElementById('editCustomerPhone').value)
       };
+
+      // Include notes
+      const notesValue = document.getElementById('editNotes') ? document.getElementById('editNotes').value : '';
+      updatedData.notes = Utils.withFallback(notesValue);
 
       const normalizedCheckInDate = normalizeDateInput(checkInDateValueRaw);
       if (normalizedCheckInDate) {
