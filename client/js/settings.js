@@ -290,49 +290,74 @@
   const saveFontBtn = document.getElementById('saveFontBtn');
   const resetFontBtn = document.getElementById('resetFontBtn');
 
-  const FONT_OPTIONS = [
-    { id: 'battambang', label: 'Kh Battambang', css: "'Battambang', 'Noto Sans Khmer', serif" },
-    { id: 'bokor', label: 'Kh Bokor', css: "'Bokor', 'Noto Sans Khmer', serif" },
-    { id: 'writhand', label: 'Kh Writhand', css: "'Writhand', 'Noto Sans Khmer', serif" },
-    { id: 'khmer-s4', label: 'Khmer S4', css: "'Khmer S4', 'Noto Sans Khmer', serif" },
-    { id: 'sbbic-serif', label: 'Khmer SBBIC Serif', css: "'Khmer SBBIC Serif', 'Noto Serif', serif" }
+  // Attempt to load a fonts manifest generated server-side (client/fonts/fonts.json).
+  // Manifest format: [{ id, label, family, filename }] where filename is relative to /fonts/.
+  const DEFAULT_FONT_OPTIONS = [
+    { id: 'battambang', label: 'Kh Battambang', family: "'Battambang', 'Noto Sans Khmer', serif" },
+    { id: 'bokor', label: 'Kh Bokor', family: "'Bokor', 'Noto Sans Khmer', serif" },
+    { id: 'writhand', label: 'Kh Writhand', family: "'Writhand', 'Noto Sans Khmer', serif" },
+    { id: 'khmer-s4', label: 'Khmer S4', family: "'Khmer S4', 'Noto Sans Khmer', serif" },
+    { id: 'sbbic-serif', label: 'Khmer SBBIC Serif', family: "'Khmer SBBIC Serif', 'Noto Serif', serif" }
   ];
 
-  const applyFont = (fontId) => {
+  const applyFont = (fontId, family) => {
     if (!fontId) {
       document.documentElement.removeAttribute('data-font');
+      if (fontPreview) fontPreview.style.fontFamily = '';
+      // remove any previously-set CSS variables so fallback applies
+      document.documentElement.style.removeProperty('--app-font');
+      document.documentElement.style.removeProperty('--khmer-font');
       return;
     }
     document.documentElement.setAttribute('data-font', fontId);
-    const opt = FONT_OPTIONS.find(f => f.id === fontId);
-    if (fontPreview && opt) {
-      fontPreview.style.fontFamily = opt.css;
+    if (fontPreview && family) {
+      fontPreview.style.fontFamily = family;
+    }
+    // set CSS variables so the font applies globally and in print immediately
+    if (family) {
+      document.documentElement.style.setProperty('--app-font', family);
+      document.documentElement.style.setProperty('--khmer-font', family);
     }
   };
 
-  const populateFontSelect = () => {
+  const populateFontSelect = (options) => {
     if (!fontSelect) return;
     fontSelect.innerHTML = '';
-    FONT_OPTIONS.forEach(opt => {
+    options.forEach(opt => {
       const o = document.createElement('option');
       o.value = opt.id;
-      o.textContent = opt.label;
+      o.textContent = opt.label || opt.id;
+      o.dataset.family = opt.family || '';
       fontSelect.appendChild(o);
     });
     const stored = localStorage.getItem(FONT_KEY) || '';
     if (stored) {
       fontSelect.value = stored;
-      applyFont(stored);
+      const selected = options.find(o => o.id === stored);
+      if (selected) applyFont(stored, selected.family);
     }
-  };
 
-  if (fontSelect) {
-    populateFontSelect();
     fontSelect.addEventListener('change', (e) => {
       const id = e.target.value;
-      applyFont(id);
+      const family = e.target.selectedOptions[0].dataset.family;
+      applyFont(id, family);
     });
-  }
+  };
+
+  // Try to load a generated manifest `fonts/fonts.json` placed in client/fonts/.
+  (async function loadFontsManifest() {
+    try {
+      const resp = await fetch('fonts/fonts.json', { cache: 'no-store' });
+      if (!resp.ok) throw new Error('No manifest');
+      const list = await resp.json();
+      // Expected list entries: { id, label, family, filename }
+      const opts = list.map(f => ({ id: f.id, label: f.label || f.id, family: f.family || f.label || f.id }));
+      populateFontSelect(opts.length ? opts : DEFAULT_FONT_OPTIONS);
+    } catch (err) {
+      // Fallback to built-in defaults
+      populateFontSelect(DEFAULT_FONT_OPTIONS);
+    }
+  })();
 
   if (saveFontBtn) {
     saveFontBtn.addEventListener('click', () => {
