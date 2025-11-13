@@ -297,7 +297,9 @@
     { id: 'bokor', label: 'Kh Bokor', family: "'Bokor', 'Noto Sans Khmer', serif" },
     { id: 'writhand', label: 'Kh Writhand', family: "'Writhand', 'Noto Sans Khmer', serif" },
     { id: 'khmer-s4', label: 'Khmer S4', family: "'Khmer S4', 'Noto Sans Khmer', serif" },
-    { id: 'sbbic-serif', label: 'Khmer SBBIC Serif', family: "'Khmer SBBIC Serif', 'Noto Serif', serif" }
+    { id: 'sbbic-serif', label: 'Khmer SBBIC Serif', family: "'Khmer SBBIC Serif', 'Noto Serif', serif" },
+    { id: 'arial', label: 'Arial', family: "Arial, Helvetica, sans-serif" },
+    { id: 'times-new-roman', label: 'Times New Roman', family: "'Times New Roman', Times, serif" }
   ];
 
   const applyFont = (fontId, family) => {
