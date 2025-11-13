@@ -31,7 +31,7 @@ const PRINT_BOOLEAN_KEYS = [
   'includeFooter'
 ];
 
-const PRINT_PAPER_SIZES = ['auto', 'a4', 'letter'];
+const PRINT_PAPER_SIZES = ['auto', 'a4', 'a5', 'letter'];
 
 const PRINT_SETTINGS_FALLBACK = {
   includeMeta: true,
@@ -160,6 +160,9 @@ const buildPageSizeCss = (size) => {
   }
   if (normalized === 'a4') {
     return '@page { size: A4; margin: 20mm; }\n';
+  }
+  if (normalized === 'a5') {
+    return '@page { size: A5; margin: 15mm; }\n';
   }
   if (normalized === 'letter') {
     return '@page { size: Letter; margin: 0.75in; }\n';
