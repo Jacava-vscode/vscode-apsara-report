@@ -5,8 +5,54 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
   transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
-/* Load Khmer font(s): Battambang and Bokor are available via Google Fonts. Other fonts may need self-hosting. */
+/* Load Khmer font(s): prefer self-hosted files in ./fonts/, fall back to Google Fonts for Battambang/Bokor. */
 @import url('https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Bokor&family=Kantumruy+Pro:wght@400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap');
+
+/* Self-hosted @font-face rules. Place WOFF2/WOFF files in `client/fonts/` with the filenames listed below. */
+@font-face {
+  font-family: 'Battambang';
+  src: url('../fonts/KhBattambang.woff2') format('woff2'),
+       url('../fonts/KhBattambang.woff') format('woff');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bokor';
+  src: url('../fonts/KhBokor.woff2') format('woff2'),
+       url('../fonts/KhBokor.woff') format('woff');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Writhand';
+  src: url('../fonts/KhWrithand.woff2') format('woff2'),
+       url('../fonts/KhWrithand.woff') format('woff');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Khmer S4';
+  src: url('../fonts/KhmerS4.woff2') format('woff2'),
+       url('../fonts/KhmerS4.woff') format('woff');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Khmer SBBIC Serif';
+  src: url('../fonts/KhmerSBBICSerif.woff2') format('woff2'),
+       url('../fonts/KhmerSBBICSerif.woff') format('woff');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* Global Styles */
 :root {
