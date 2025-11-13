@@ -91,6 +91,34 @@
                 <div class="alert alert-success is-hidden" id="settingsAlert" role="status" aria-live="assertive"></div>
             </div>
         </div>
+        
+        <div class="card" aria-live="polite">
+            <div style="display: flex; flex-direction: column; gap: 1rem; padding: 1.25rem;">
+                <div class="card-header" style="margin: 0; padding: 0; border: none;">
+                    <h2 class="card-title" data-i18n="settings.fonts.title">Fonts</h2>
+                    <p class="card-subtitle" data-i18n="settings.fonts.subtitle">Choose a Khmer font for the UI and print output (preview below).</p>
+                </div>
+
+                <div style="display:flex; gap:1rem; align-items:center;">
+                    <label for="fontSelect" style="min-width:120px; font-weight:600;">Font</label>
+                    <select id="fontSelect" aria-label="Select font" style="padding:0.35rem 0.5rem; border-radius:6px; border:1px solid var(--border-color); background:var(--surface);">
+                        <!-- populated by JS -->
+                    </select>
+                </div>
+
+                <div style="margin-top:0.5rem;">
+                    <div style="font-size:0.95rem; color:var(--text-secondary); margin-bottom:0.5rem;">Preview</div>
+                    <div id="fontPreview" style="padding:0.75rem; border-radius:6px; background:var(--surface); border:1px solid var(--border-color);">កម្ពុជា ភាសាខ្មែរ — Apsara Report</div>
+                </div>
+
+                <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                    <button type="button" class="btn btn-primary" id="saveFontBtn">Save font</button>
+                    <button type="button" class="btn btn-secondary" id="resetFontBtn">Reset font</button>
+                </div>
+
+                <div style="color:var(--text-secondary); font-size:0.85rem; margin-top:0.5rem;">Note: Some fonts may require self-hosting. If a font doesn't load, the browser will fall back to system fonts.</div>
+            </div>
+        </div>
     </main>
 
     <script src="js/i18n.js"></script>

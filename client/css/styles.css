@@ -5,7 +5,8 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
   transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
-@import url('https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Kantumruy+Pro:wght@400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap');
+/* Load Khmer font(s): Battambang and Bokor are available via Google Fonts. Other fonts may need self-hosting. */
+@import url('https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Bokor&family=Kantumruy+Pro:wght@400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap');
 
 /* Global Styles */
 :root {
@@ -101,7 +102,7 @@
 }
 
 body {
-  font-family: 'Battambang', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: var(--app-font, 'Battambang'), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background-color: var(--background);
   color: var(--text-primary);
   line-height: 1.6;
@@ -109,7 +110,7 @@ body {
 }
 
 html[data-lang='kh'] body {
-  font-family: 'Battambang', 'Noto Sans Khmer', 'Kantumruy Pro', 'Khmer OS Battambang', sans-serif;
+  font-family: var(--khmer-font, 'Battambang'), 'Noto Sans Khmer', 'Kantumruy Pro', 'Khmer OS Battambang', sans-serif;
   letter-spacing: normal;
 }
 
@@ -129,9 +130,16 @@ html[data-lang='kh'] .language-option,
 html[data-lang='kh'] .btn,
 html[data-lang='kh'] .badge,
 html[data-lang='kh'] th {
-  font-family: 'Battambang', 'Kantumruy Pro', 'Noto Sans Khmer', 'Khmer OS Muol Light', sans-serif;
+  font-family: var(--khmer-font, 'Battambang'), 'Kantumruy Pro', 'Noto Sans Khmer', 'Khmer OS Muol Light', sans-serif;
   letter-spacing: normal;
 }
+
+/* Map data-font attribute to CSS variables so JS can switch fonts dynamically. */
+html[data-font='battambang'] { --khmer-font: 'Battambang'; --app-font: 'Battambang'; }
+html[data-font='bokor'] { --khmer-font: 'Bokor'; --app-font: 'Bokor'; }
+html[data-font='writhand'] { --khmer-font: 'Writhand', 'Noto Sans Khmer'; --app-font: 'Writhand', 'Noto Sans Khmer'; }
+html[data-font='khmer-s4'] { --khmer-font: 'Khmer S4', 'Noto Sans Khmer'; --app-font: 'Khmer S4', 'Noto Sans Khmer'; }
+html[data-font='sbbic-serif'] { --khmer-font: 'Khmer SBBIC Serif', 'Noto Serif'; --app-font: 'Khmer SBBIC Serif', 'Noto Serif'; }
 
 html[data-lang='kh'] .language-option {
   letter-spacing: normal;

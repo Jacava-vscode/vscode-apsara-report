@@ -283,6 +283,88 @@
   resetButton.addEventListener('click', handleReset);
   window.addEventListener('beforeunload', handleBeforeUnload);
 
+  // --- Font selection support ---
+  const FONT_KEY = 'apsara-font';
+  const fontSelect = document.getElementById('fontSelect');
+  const fontPreview = document.getElementById('fontPreview');
+  const saveFontBtn = document.getElementById('saveFontBtn');
+  const resetFontBtn = document.getElementById('resetFontBtn');
+
+  const FONT_OPTIONS = [
+    { id: 'battambang', label: 'Kh Battambang', css: "'Battambang', 'Noto Sans Khmer', serif" },
+    { id: 'bokor', label: 'Kh Bokor', css: "'Bokor', 'Noto Sans Khmer', serif" },
+    { id: 'writhand', label: 'Kh Writhand', css: "'Writhand', 'Noto Sans Khmer', serif" },
+    { id: 'khmer-s4', label: 'Khmer S4', css: "'Khmer S4', 'Noto Sans Khmer', serif" },
+    { id: 'sbbic-serif', label: 'Khmer SBBIC Serif', css: "'Khmer SBBIC Serif', 'Noto Serif', serif" }
+  ];
+
+  const applyFont = (fontId) => {
+    if (!fontId) {
+      document.documentElement.removeAttribute('data-font');
+      return;
+    }
+    document.documentElement.setAttribute('data-font', fontId);
+    const opt = FONT_OPTIONS.find(f => f.id === fontId);
+    if (fontPreview && opt) {
+      fontPreview.style.fontFamily = opt.css;
+    }
+  };
+
+  const populateFontSelect = () => {
+    if (!fontSelect) return;
+    fontSelect.innerHTML = '';
+    FONT_OPTIONS.forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt.id;
+      o.textContent = opt.label;
+      fontSelect.appendChild(o);
+    });
+    const stored = localStorage.getItem(FONT_KEY) || '';
+    if (stored) {
+      fontSelect.value = stored;
+      applyFont(stored);
+    }
+  };
+
+  if (fontSelect) {
+    populateFontSelect();
+    fontSelect.addEventListener('change', (e) => {
+      const id = e.target.value;
+      applyFont(id);
+    });
+  }
+
+  if (saveFontBtn) {
+    saveFontBtn.addEventListener('click', () => {
+      const id = fontSelect ? fontSelect.value : '';
+      try {
+        if (id) {
+          localStorage.setItem(FONT_KEY, id);
+        } else {
+          localStorage.removeItem(FONT_KEY);
+        }
+        showAlert('success', 'settings.alerts.saved', FALLBACK_TEXT.alerts.saved);
+      } catch (err) {
+        console.error('Failed to save font setting', err);
+        showAlert('error', 'settings.alerts.error', FALLBACK_TEXT.alerts.error);
+      }
+    });
+  }
+
+  if (resetFontBtn) {
+    resetFontBtn.addEventListener('click', () => {
+      try {
+        localStorage.removeItem(FONT_KEY);
+        if (fontSelect) fontSelect.value = '';
+        applyFont('');
+        showAlert('info', 'settings.alerts.reset', FALLBACK_TEXT.alerts.reset);
+      } catch (err) {
+        console.error('Failed to reset font setting', err);
+        showAlert('error', 'settings.alerts.error', FALLBACK_TEXT.alerts.error);
+      }
+    });
+  }
+
   if (window.I18n && typeof window.I18n.onChange === 'function') {
     window.I18n.onChange(() => {
       updateAllOptionContent();
