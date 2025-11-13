@@ -345,7 +345,7 @@
   };
 
   // Try to load a generated manifest `fonts/fonts.json` placed in client/fonts/.
-  (async function loadFontsManifest() {
+  async function loadFontsManifest() {
     try {
       const resp = await fetch('fonts/fonts.json', { cache: 'no-store' });
       if (!resp.ok) throw new Error('No manifest');
@@ -357,7 +357,27 @@
       // Fallback to built-in defaults
       populateFontSelect(DEFAULT_FONT_OPTIONS);
     }
-  })();
+  }
+
+  // load on init
+  loadFontsManifest();
+
+  // Support manual refresh (button) so users can copy fonts into client/fonts/ and refresh without reloading page
+  const refreshFontsBtn = document.getElementById('refreshFontsBtn');
+  if (refreshFontsBtn) {
+    refreshFontsBtn.addEventListener('click', async () => {
+      try {
+        refreshFontsBtn.disabled = true;
+        await loadFontsManifest();
+        showAlert('success', 'settings.alerts.saved', FALLBACK_TEXT.alerts.saved);
+      } catch (err) {
+        console.error('Failed to refresh fonts manifest', err);
+        showAlert('error', 'settings.alerts.error', FALLBACK_TEXT.alerts.error);
+      } finally {
+        refreshFontsBtn.disabled = false;
+      }
+    });
+  }
 
   if (saveFontBtn) {
     saveFontBtn.addEventListener('click', () => {
