@@ -285,10 +285,12 @@
 
   // --- Font selection support ---
   const FONT_KEY = 'apsara-font';
+  const TABLE_HEADER_BOLD_KEY = 'apsara-table-header-bold';
   const fontSelect = document.getElementById('fontSelect');
   const fontPreview = document.getElementById('fontPreview');
   const saveFontBtn = document.getElementById('saveFontBtn');
   const resetFontBtn = document.getElementById('resetFontBtn');
+  const tableHeaderBoldCheckbox = document.getElementById('tableHeaderBold');
 
   // Attempt to load a fonts manifest generated server-side (client/fonts/fonts.json).
   // Manifest format: [{ id, label, family, filename }] where filename is relative to /fonts/.
@@ -377,6 +379,13 @@
     }
   };
 
+  const applyTableHeaderBold = (enabled) => {
+    try {
+      const weight = enabled ? '700' : '400';
+      document.documentElement.style.setProperty('--table-header-weight', weight);
+    } catch (e) { /* ignore */ }
+  };
+
   const populateFontSelect = (options) => {
     if (!fontSelect) return;
     fontSelect.innerHTML = '';
@@ -411,6 +420,25 @@
       }
     });
   };
+
+  // Initialize table header bold checkbox from storage
+  try {
+    const storedHeaderBold = localStorage.getItem(TABLE_HEADER_BOLD_KEY);
+    const enabled = storedHeaderBold === '1' || storedHeaderBold === 'true';
+    if (tableHeaderBoldCheckbox) {
+      tableHeaderBoldCheckbox.checked = !!enabled;
+      applyTableHeaderBold(!!enabled);
+      tableHeaderBoldCheckbox.addEventListener('change', (e) => {
+        const on = !!e.target.checked;
+        applyTableHeaderBold(on);
+        try {
+          localStorage.setItem(TABLE_HEADER_BOLD_KEY, on ? '1' : '0');
+        } catch (err) { /* ignore */ }
+      });
+    }
+  } catch (err) {
+    console.warn('Failed to initialize table header bold setting', err);
+  }
 
   // Try to load a generated manifest `fonts/fonts.json` placed in client/fonts/.
   async function loadFontsManifest() {

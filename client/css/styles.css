@@ -207,6 +207,16 @@ body, body * {
   }
 }
 
+/* Table header weight controlled by Settings: default to 600 (semi-bold) */
+:root {
+  --table-header-weight: 600;
+}
+
+table thead th,
+table th {
+  font-weight: var(--table-header-weight) !important;
+}
+
 html[data-lang='kh'] .language-option {
   letter-spacing: normal;
 }
