@@ -73,6 +73,11 @@
   --surface-hover: #e2e8f0;
 }
 
+/* Khmer text helper class — applied by `khmer-font-apply.js` to runs of Khmer characters */
+.khmer-text {
+  font-family: var(--khmer-font, 'Battambang') !important;
+}
+
 .print-options-bar {
   display: flex;
   align-items: center;
@@ -150,7 +155,6 @@
 
 body {
   font-family: var(--app-font, 'Battambang'), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  font-size: 14px;
   background-color: var(--background);
   color: var(--text-primary);
   line-height: 1.6;
@@ -205,16 +209,6 @@ body, body * {
   html, body, body * {
     font-family: var(--app-font, 'Battambang') !important;
   }
-}
-
-/* Table header weight controlled by Settings: default to 600 (semi-bold) */
-:root {
-  --table-header-weight: 600;
-}
-
-table thead th,
-table th {
-  font-weight: var(--table-header-weight) !important;
 }
 
 html[data-lang='kh'] .language-option {
