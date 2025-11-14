@@ -76,6 +76,8 @@
 /* Khmer text helper class — applied by `khmer-font-apply.js` to runs of Khmer characters */
 .khmer-text {
   font-family: var(--khmer-font, 'Battambang') !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
 }
 
 .print-options-bar {
