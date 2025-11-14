@@ -628,6 +628,19 @@ body.list-page .table-container table {
   min-width: 960px;
 }
 
+/* Fix table row height on the List page to 38px for consistent rows */
+body.list-page table tbody tr {
+  height: 38px;
+}
+
+body.list-page table tbody td {
+  padding: 0.35rem 0.75rem; /* reduce padding so content fits within 38px */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
 /* Badges */
 .badge {
   display: inline-block;
