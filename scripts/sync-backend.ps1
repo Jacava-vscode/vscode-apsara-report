@@ -22,6 +22,7 @@ param(
     [string]$TargetBranch = 'main',
     [ValidateSet('root','subdir')][string]$Mode = 'subdir',
     [string]$TargetSubdir = 'server',
+    [switch]$ForceRemote,
     [switch]$DryRun
 )
 
@@ -64,6 +65,15 @@ if (-not (Test-Path (Join-Path $backendDir '.git'))) {
         }
         if ($currentRemote -and $BackendRepoUrl -and ($currentRemote -ne $BackendRepoUrl)) {
             Write-Host "Updating origin remote from $currentRemote to $BackendRepoUrl"
+            git remote set-url origin $BackendRepoUrl
+        } elseif (-not $currentRemote -and $BackendRepoUrl) {
+            # If no origin set, add the origin remote pointing at the provided backend URL
+            Write-Host "Setting origin remote to $BackendRepoUrl"
+            git remote add origin $BackendRepoUrl
+        }
+        # If forced, explicitly set the origin no matter what
+        if ($ForceRemote -and $BackendRepoUrl) {
+            Write-Host "Force updating origin remote to $BackendRepoUrl"
             git remote set-url origin $BackendRepoUrl
         }
 
