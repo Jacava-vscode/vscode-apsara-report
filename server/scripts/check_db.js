@@ -3,8 +3,16 @@ const path = require('path');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 
-// Load server .env explicitly
-dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
+// Load server .env explicitly - prefer `server/.env` but fall back to root `../.env` if not found
+const serverEnv = path.resolve(__dirname, '..', '.env');
+const rootEnv = path.resolve(__dirname, '..', '..', '.env');
+if (require('fs').existsSync(serverEnv)) {
+  dotenv.config({ path: serverEnv });
+} else if (require('fs').existsSync(rootEnv)) {
+  dotenv.config({ path: rootEnv });
+} else {
+  dotenv.config();
+}
 
 const descriptors = [
   { name: 'primary', envKey: 'MONGODB_URI_PRIMARY', dbNameEnvKey: null },
