@@ -1,21 +1,13 @@
-name: Check Backend Mirror
+name: "DISABLED: Check Backend Mirror"
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch: {}
 
 jobs:
-  backend-sync:
+  disabled:
+    if: false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up PowerShell
-        run: sudo apt-get update && sudo apt-get install -y powershell
-
-      - name: Run backend sync check
-        run: pwsh -NoProfile -File ./scripts/check-backend-sync.ps1
+      - name: Disabled
+        run: |
+          echo "This workflow was disabled in the repository. The backend mirror check flow has been removed." 
