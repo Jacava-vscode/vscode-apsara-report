@@ -1,3 +1,9 @@
 {
-    "liveServer.settings.port": 5501
+    "liveServer.settings.port": 5501,
+    // Prefer server/ as a default working directory for tasks and terminals
+    "terminal.integrated.cwd": "${workspaceFolder:server}",
+    "files.exclude": {
+        "**/.backend_repo": true,
+        "secrets": true
+    }
 }

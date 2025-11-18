@@ -6,9 +6,11 @@
   "scripts": {
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
+    "check-modules": "node scripts/check-modules.js",
     "client": "cd client && python -m http.server 3000",
     "install-deps": "npm install",
     "setup": "npm install && echo Please configure .env file with MongoDB connection string",
+    "check-db": "node server/scripts/check_db.js",
     "bootstrap:images": "node scripts/bootstrap-image-cluster.js",
     "bootstrap:roles": "node scripts/bootstrap-role-cluster.js"
   },

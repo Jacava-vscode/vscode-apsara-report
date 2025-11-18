@@ -1,0 +1,28 @@
+name: CI - Basic checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-server-entry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check server/index.js exists
+        run: |
+          if [ ! -f server/index.js ]; then
+            echo "server/index.js not found";
+            exit 1;
+          fi
+
+      - name: Check root wrapper index.js exists
+        run: |
+          if [ ! -f index.js ]; then
+            echo "index.js not found at repo root";
+            exit 1;
+          fi

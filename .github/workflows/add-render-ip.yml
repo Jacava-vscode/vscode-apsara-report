@@ -1,0 +1,48 @@
+name: Add Render host IP to Atlas
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: 'Atlas Project Id (optional, can be stored as secret)'
+        required: false
+      ip:
+        description: 'IP to whitelist. If not provided, will use secrets.RENDER_PUBLIC_IP'
+        required: false
+      remove_after_minutes:
+        description: 'Optional TTL; if set <= 60, the job will sleep and then remove the IP (not recommended for long durations).'
+        required: false
+
+jobs:
+  add-ip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify PowerShell installed
+        run: |
+          if ! command -v pwsh >/dev/null; then
+            echo 'PowerShell (pwsh) is not installed. Installing...' ;
+            sudo apt-get update && sudo apt-get install -y powershell
+          fi
+
+      - name: Add Render IP to Atlas
+        env:
+          ATLAS_PUBLIC_KEY: ${{ secrets.ATLAS_PUBLIC_KEY }}
+          ATLAS_PRIVATE_KEY: ${{ secrets.ATLAS_PRIVATE_KEY }}
+          RENDER_PUBLIC_IP: ${{ secrets.RENDER_PUBLIC_IP }}
+        run: |
+          pwsh -NoProfile -Command "& './scripts/add-atlas-ip.ps1' -ProjectId '${{ github.event.inputs.project_id }}' -Ip '${{ github.event.inputs.ip }}' -PublicKey $env:ATLAS_PUBLIC_KEY -PrivateKey $env:ATLAS_PRIVATE_KEY"
+
+      - name: Optional auto-remove
+        if: ${{ github.event.inputs.remove_after_minutes }}
+        run: |
+          minutes=${{ github.event.inputs.remove_after_minutes }}
+          if [ $minutes -gt 0 -a $minutes -le 60 ]; then
+            echo "Sleeping for $minutes minutes then removing IP..."
+            sleep $(($minutes * 60))
+            echo "Calling remove script"
+            pwsh -NoProfile -Command "& './scripts/remove-atlas-ip.ps1' -ProjectId '${{ github.event.inputs.project_id }}' -Ip '${{ github.event.inputs.ip || env:RENDER_PUBLIC_IP }}' -PublicKey '${{ secrets.ATLAS_PUBLIC_KEY }}' -PrivateKey '${{ secrets.ATLAS_PRIVATE_KEY }}'"
+          else
+            echo "remove_after_minutes must be <= 60 when using auto-remove in a single workflow. Use the separate removal workflow for longer timeouts."; exit 1
+          fi

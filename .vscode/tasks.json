@@ -1,0 +1,78 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Backend (prod)",
+            "type": "shell",
+            "command": "npm start",
+            "options": {
+                "cwd": "${workspaceFolder:server}"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Start Backend (dev)",
+            "type": "shell",
+            "command": "npm run dev",
+            "options": {
+                "cwd": "${workspaceFolder:server}"
+            },
+            "problemMatcher": [],
+            "isBackground": true
+        },
+        {
+            "label": "Check DB",
+            "type": "shell",
+            "command": "npm run check-db",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "Start Client (http)",
+            "type": "shell",
+            "command": "python -m http.server 3000",
+            "options": {
+                "cwd": "${workspaceFolder:client}"
+            },
+            "isBackground": true
+        },
+        {
+            "label": "Start Client (live-server)",
+            "type": "shell",
+            "command": "npx live-server . --port=3000",
+            "options": {
+                "cwd": "${workspaceFolder:client}"
+            },
+            "isBackground": true
+        },
+        {
+            "label": "Test Connection (script)",
+            "type": "shell",
+            "command": "node ${workspaceFolder}/test-connection.js",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "Check Modules",
+            "type": "shell",
+            "command": "npm run check-modules",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "Update Backend (deprecated)",
+            "type": "shell",
+            "command": "echo 'Update Backend tasks were removed; sync scripts are disabled.'",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        }
+    ]
+}

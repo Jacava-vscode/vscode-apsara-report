@@ -1,0 +1,46 @@
+name: Update Backend Repo (Subtree)
+
+on:
+  workflow_dispatch:
+    inputs:
+      backend_repo_url:
+        description: 'Full backend repo URL'
+        required: false
+        default: 'https://github.com/Jacava-vscode/apsara-report-backend.git'
+      target_branch:
+        description: 'Target branch in the backend repo'
+        required: false
+        default: 'main'
+
+jobs:
+  update-subtree:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up PowerShell
+        run: sudo apt-get update && sudo apt-get install -y powershell
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+      - name: Prepare authenticated URL (optional)
+        run: |
+          BACKEND_URL="${{ github.event.inputs.backend_repo_url }}"
+          BACKEND_REPO_PAT="${{ secrets.BACKEND_REPO_PAT }}"
+          if [ -z "$BACKEND_REPO_PAT" ]; then
+            echo "AUTH_URL=$BACKEND_URL" >> $GITHUB_ENV
+          else
+            AUTH=$(echo "$BACKEND_URL" | sed -e "s#https://#https://x-access-token:$BACKEND_REPO_PAT@#")
+            echo "AUTH_URL=$AUTH" >> $GITHUB_ENV
+          fi
+
+      - name: Run update-backend-repo
+        run: |
+          # AUTH_URL is set by the previous step and available as an environment variable for shells
+          pwsh -NoProfile -Command "& './scripts/update-backend-repo.ps1' -BackendRepoUrl '$env:AUTH_URL' -TargetBranch '${{ github.event.inputs.target_branch }}'"

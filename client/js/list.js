@@ -537,6 +537,7 @@ function renderTable() {
             <td>
               <div class="action-buttons">
                 <button class="btn btn-secondary btn-sm" onclick="viewEquipment('${item._id}')">${translate('buttons.view', { fallback: 'View' })}</button>
+                <a class="btn btn-outline btn-sm" href="view.html?id=${item._id}" target="_blank" rel="noopener noreferrer">${translate('buttons.openPage', { fallback: 'Open' })}</a>
                 <button class="btn btn-primary btn-sm" onclick="editEquipment('${item._id}')">${translate('buttons.edit', { fallback: 'Edit' })}</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteEquipment('${item._id}')">${translate('buttons.delete', { fallback: 'Delete' })}</button>
               </div>

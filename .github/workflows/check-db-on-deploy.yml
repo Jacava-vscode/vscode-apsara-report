@@ -1,0 +1,45 @@
+name: CI - Check DB on Render after deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      render_service_url:
+        description: 'Full Render service URL (e.g., https://apsara-report.onrender.com)'
+        required: true
+
+jobs:
+  check-db:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Wait for Render service
+        run: |
+          URL=${{ github.event.inputs.render_service_url }}
+          echo "Pinging $URL/api/health..."
+          n=0
+          until [ $n -ge 60 ]
+          do
+            status=$(curl -s -o /dev/null -w "%{http_code}" $URL/api/health || echo 000)
+            echo "status: $status"
+            if [ "$status" = "200" ]; then
+              echo "Service is responding"
+              break
+            fi
+            n=$((n+1))
+            sleep 5
+          done
+          if [ $n -ge 60 ]; then echo "Service did not become ready"; exit 1; fi
+
+      - name: Install jq
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Run remote check_db (on Render host)
+        env:
+          INTERNAL_CHECK_TOKEN: ${{ secrets.INTERNAL_CHECK_TOKEN }}
+        run: |
+          URL=${{ github.event.inputs.render_service_url }}/api/internal/check-db
+          echo "Calling: $URL"
+          curl -s -X POST -H "Authorization: Bearer $INTERNAL_CHECK_TOKEN" $URL | jq -r .

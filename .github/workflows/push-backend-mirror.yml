@@ -1,0 +1,46 @@
+name: Push Backend Mirror
+
+on:
+  workflow_dispatch:
+    inputs:
+      backend_repo_url:
+        description: 'Full backend repo url (optional)'
+        required: false
+        default: 'https://github.com/Jacava-vscode/apsara-report-backend.git'
+      target_branch:
+        description: 'Branch to push the backend into'
+        required: false
+        default: 'main'
+
+jobs:
+  push-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up PowerShell
+        run: sudo apt-get update && sudo apt-get install -y powershell
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+      - name: Run push-backend-mirror
+        env:
+          BACKEND_URL: ${{ github.event.inputs.backend_repo_url }}
+          TARGET_BRANCH: ${{ github.event.inputs.target_branch }}
+          # Optional: allow an authenticated push to external repos via PAT
+          BACKEND_REPO_PAT: ${{ secrets.BACKEND_REPO_PAT }}
+        run: |
+          # If a PAT is available, replace the https:// prefix so git push can authenticate
+          if ([string]::IsNullOrWhiteSpace($env:BACKEND_REPO_PAT)) {
+            $authUrl = $env:BACKEND_URL
+          } else {
+            $pat = $env:BACKEND_REPO_PAT
+            $authUrl = $env:BACKEND_URL -replace '^https://', "https://x-access-token:${pat}@"
+          }
+          pwsh -NoProfile -Command "& './scripts/push-backend-mirror.ps1' -BackendRepoUrl '$authUrl' -TargetBranch '$env:TARGET_BRANCH' -Force"

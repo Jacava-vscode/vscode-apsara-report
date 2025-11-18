@@ -18,12 +18,8 @@ Notes:
 #>
 
 param(
-    [string]$BackendRepoUrl = 'https://github.com/Jacava-vscode/apsara-report-backend.git',
-    [string]$TargetBranch = 'main',
-    [ValidateSet('root','subdir')][string]$Mode = 'subdir',
-    [string]$TargetSubdir = 'server',
-    [switch]$ForceRemote,
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$ForceRemove
 )
 
 $ErrorActionPreference = 'Stop'
@@ -202,4 +198,8 @@ try {
     Pop-Location
 }
 
-Write-Host "Backend sync finished."
+Write-Host "This script is deprecated: `server/` is the canonical backend repository and does not require mirroring." -ForegroundColor Yellow
+Write-Host "If you still need to mirror, restore the original script from git history or run a manual sync." -ForegroundColor Yellow
+if (-not $ForceRemove) { Write-Host "Exiting (use -ForceRemove to remove the legacy .backend_repo directory)." -ForegroundColor Red; exit 1 }
+Write-Host "DEPRECATED: Not performing fetch; use manual git operations if you truly want to sync." -ForegroundColor Red
+exit 1

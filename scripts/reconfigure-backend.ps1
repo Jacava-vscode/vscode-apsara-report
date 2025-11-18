@@ -14,6 +14,10 @@ if (-not (Test-Path $nested)) {
   Write-Host "No nested server folder found. Nothing to do."; exit 0
 }
 
+Write-Host "DEPRECATED: `reconfigure-backend.ps1` is no longer required because `server/` is the canonical backend repo." -ForegroundColor Yellow
+Write-Host "If you still have a nested 'server/server' directory, handle it manually or consult git history." -ForegroundColor Yellow
+exit 0
+
 Write-Host "Found nested server folder: $nested"
 
 function maybeCopy($src, $dest) {

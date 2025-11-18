@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Debug Server (index)",
+            "program": "${workspaceFolder:server}/index.js",
+            "cwd": "${workspaceFolder:server}",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder:server}/.env",
+            "preLaunchTask": "Start Backend (dev)"
+        }
+    ]
+}

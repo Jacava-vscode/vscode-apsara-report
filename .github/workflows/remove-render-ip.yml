@@ -1,0 +1,32 @@
+name: Remove Render host IP from Atlas
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: 'Atlas Project Id (optional, can be stored as secret)'
+        required: false
+      ip:
+        description: 'IP to remove from whitelist. If not provided, will use secrets.RENDER_PUBLIC_IP'
+        required: false
+
+jobs:
+  remove-ip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify PowerShell installed
+        run: |
+          if ! command -v pwsh >/dev/null; then
+            echo 'PowerShell (pwsh) is not installed. Installing...' ;
+            sudo apt-get update && sudo apt-get install -y powershell
+          fi
+
+      - name: Remove Render IP from Atlas
+        env:
+          ATLAS_PUBLIC_KEY: ${{ secrets.ATLAS_PUBLIC_KEY }}
+          ATLAS_PRIVATE_KEY: ${{ secrets.ATLAS_PRIVATE_KEY }}
+          RENDER_PUBLIC_IP: ${{ secrets.RENDER_PUBLIC_IP }}
+        run: |
+          pwsh -NoProfile -Command "& './scripts/remove-atlas-ip.ps1' -ProjectId '${{ github.event.inputs.project_id }}' -Ip '${{ github.event.inputs.ip }}' -PublicKey $env:ATLAS_PUBLIC_KEY -PrivateKey $env:ATLAS_PRIVATE_KEY"

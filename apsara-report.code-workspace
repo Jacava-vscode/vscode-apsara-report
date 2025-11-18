@@ -1,0 +1,27 @@
+{
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "server"
+        },
+        {
+            "path": "client"
+        }
+    ],
+    "settings": {
+        "terminal.integrated.cwd": "${workspaceFolder:server}",
+        "files.exclude": {
+            "**/.backend_repo": true,
+            "secrets": true
+        }
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-vscode.powershell",
+            "streetsidesoftware.code-spell-checker",
+            "esbenp.prettier-vscode"
+        ]
+    }
+}
