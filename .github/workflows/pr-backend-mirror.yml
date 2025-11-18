@@ -1,0 +1,79 @@
+name: "Create PR: Mirror server/ to external backend (manual)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      backend_repo_url:
+        description: 'Full backend repo URL (https://github.com/owner/repo.git)'
+        required: true
+        default: 'https://github.com/Jacava-vscode/apsara-report-backend.git'
+      target_branch:
+        description: 'Target branch in the backend repo (where the PR should be merged)'
+        required: false
+        default: 'main'
+      pr_title:
+        description: 'Optional PR title'
+        required: false
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure required secret exists
+        run: |
+          if [ -z "${{ secrets.BACKEND_REPO_PAT }}" ]; then
+            echo "ERROR: secret BACKEND_REPO_PAT must be set to push to external repo and create a PR" >&2
+            exit 1
+          fi
+
+      - name: Prepare authenticated URL
+        run: |
+          BACKEND_URL="${{ github.event.inputs.backend_repo_url }}"
+          PAT="${{ secrets.BACKEND_REPO_PAT }}"
+          AUTH_URL=$(echo "$BACKEND_URL" | sed -e "s#https://#https://x-access-token:$PAT@#")
+          echo "AUTH_URL=$AUTH_URL" >> $GITHUB_ENV
+
+      - name: Create subtree branch with server/ content
+        id: create_branch
+        run: |
+          ts=$(date -u +%Y%m%d%H%M%S)
+          branch="mirror/server-$ts"
+          git subtree split --prefix server -b "$branch"
+          echo "BRANCH=$branch" >> $GITHUB_OUTPUT
+
+      - name: Push branch to external backend repo
+        run: |
+          echo "Pushing $BRANCH to external repo"
+          git push "$AUTH_URL" "$BRANCH:$BRANCH"
+        env:
+          AUTH_URL: ${{ env.AUTH_URL }}
+          BRANCH: ${{ steps.create_branch.outputs.BRANCH }}
+
+      - name: Open Pull Request on external repo
+        run: |
+          set -e
+          owner_repo=$(echo "${{ github.event.inputs.backend_repo_url }}" | sed -e 's#https://github.com/##' -e 's#\.git$##')
+          owner=$(echo "$owner_repo" | cut -d'/' -f1)
+          repo=$(echo "$owner_repo" | cut -d'/' -f2)
+          pr_title="${{ github.event.inputs.pr_title }}"
+          if [ -z "$pr_title" ]; then
+            pr_title="Mirror server/ -> ${{ github.event.inputs.target_branch }} ($BRANCH)"
+          fi
+          body="Automated mirror PR created from ${{ github.repository }}. Please review before merging."
+          api_url="https://api.github.com/repos/$owner/$repo/pulls"
+          json=$(printf '{"title":"%s","head":"%s","base":"%s","body":"%s"}' "$pr_title" "$BRANCH" "${{ github.event.inputs.target_branch }}" "$body")
+          echo "Creating PR at $api_url"
+          resp=$(curl -s -X POST -H "Authorization: token ${{ secrets.BACKEND_REPO_PAT }}" -H "Accept: application/vnd.github.v3+json" "$api_url" -d "$json")
+          echo "$resp"
+        env:
+          BRANCH: ${{ steps.create_branch.outputs.BRANCH }}
+
+      - name: Cleanup local subtree branch
+        if: always()
+        run: |
+          git branch -D "$BRANCH" || true
